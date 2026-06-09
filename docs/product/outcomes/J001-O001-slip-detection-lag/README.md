@@ -5,10 +5,10 @@ noticing.
 
 ## Risks
 
-- **J001-O001-RSK001** - Coarse Check Cadence: The bird-dogger inspects
-  items at intervals; slip that begins between inspections is not
-  visible until the next inspection, increasing the time between an
-  item slipping and the bird-dogger noticing.
+- **J001-O001-RSK001** - Coarse Check Cadence: Items are observed at
+  intervals; slip that begins between observations is not visible
+  until the next one, increasing the time between an item slipping
+  and the bird-dogger noticing.
 - **J001-O001-RSK002** - Buried Slip Signal: Evidence that an item is
   slipping is present in tracked data but mixed in with healthy items,
   requiring the bird-dogger to search before recognizing the slip,
@@ -24,9 +24,9 @@ noticing.
   an item slipping and the bird-dogger noticing.
 - **J001-O001-RSK005** - Source Blind Spot: Slip occurs in a data
   source the product cannot read — because of an outage or because the
-  source has not been integrated — leaving the slip invisible until it
-  surfaces elsewhere, increasing the time between an item slipping and
-  the bird-dogger noticing.
+  source has not been integrated — leaving the slip invisible,
+  increasing the time between an item slipping and the bird-dogger
+  noticing.
 
 ## Requirements
 
