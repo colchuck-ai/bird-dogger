@@ -1,7 +1,8 @@
 # J001-O005-R005 - Escalation Record
 
-The product must record each escalation attempt — target, channel,
-time, and response — and surface that history at the item level.
+The product must record each bird-dogger touch on an item —
+including escalation attempts — with target, channel, time, and
+response, and surface that history at the item level.
 
 ## Detail
 
@@ -9,16 +10,21 @@ Without a persisted history, the bird-dogger re-escalates paths
 that already failed or skips steps in the chain, because prior
 attempts are not carried between checkpoints (RSK004).
 
-R005 names the *what*: each escalation attempt is recorded with
-target (who on R001's chain), channel (e.g., DM, email, meeting),
-time, and response (received, none yet, declined, redirected).
-That history is surfaced at the item level. R005 does not
-prescribe the channel taxonomy, the response state vocabulary, or
-the retention horizon — those are engineering-layer. Routine
-touches the bird-dogger uses to anchor R003's response window
-follow the same recording shape; the distinction between
-"escalation attempt" and "touch" is a label on the record, not a
-separate store.
+R005 names the *what*: each bird-dogger touch on an item is
+recorded with target (who on R001's chain, or the owner for a
+routine touch), channel (e.g., DM, email, meeting), time, and
+response (received, none yet, declined, redirected). That history
+is surfaced at the item level. R005 does not prescribe the channel
+taxonomy, the response state vocabulary, or the retention horizon
+— those are engineering-layer. Routine touches the bird-dogger
+uses to anchor R003's response window follow the same recording
+shape; the distinction between "escalation attempt" and "touch"
+is a label on the record, not a separate store. R005 carries two
+mitigation roles on one store: the escalation-attempt recording
+is R005's direct mitigation of RSK004, and the routine-touch
+recording is enabling infrastructure for R003's mitigation of
+RSK002. Both roles share the same record shape; the label is
+what tells them apart.
 
 R005 is the memory hub for O005. R003 reads the most recent touch
 to compute its window; R004 reads prior attempts as a synthesis
@@ -65,9 +71,12 @@ job is preserving the attempt log itself.
 
 - [ ] Each escalation attempt is recorded with target, channel,
       time, and response state.
-- [ ] The escalation history is visible at the item level across
-      checkpoints, not only within the checkpoint where the
-      attempt was made.
+- [ ] Each routine touch is recorded with the same shape and is
+      distinguishable from an escalation attempt by a label on
+      the record, so R003 can read it as a touch.
+- [ ] The touch and escalation history is visible at the item
+      level across checkpoints, not only within the checkpoint
+      where the touch or attempt was made.
 - [ ] Failed-delivery attempts are recorded with the failure
       state explicit rather than omitted or normalized.
 

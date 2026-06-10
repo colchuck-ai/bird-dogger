@@ -1,10 +1,10 @@
 # J001-O005-R004 - Escalation Timing Recommendation
 
 The product must synthesize signals — slip status, intervention
-window, response window — into a recommendation of when an item
-warrants escalation, which the bird-dogger can adopt or override,
-rather than leaving the timing call entirely to the bird-dogger
-each checkpoint.
+recommendation, response window — into a recommendation of when
+an item warrants escalation, which the bird-dogger can adopt or
+override, rather than leaving the timing call entirely to the
+bird-dogger each checkpoint.
 
 ## Detail
 
@@ -16,8 +16,8 @@ for intervention.
 
 R004 names the *what*: a per-item recommendation of "escalate
 now," "not yet," or "cannot recommend," derivable from slip
-signals (O001), the intervention window (O004-R003), the response
-window (R003), and prior escalation history (R005). The
+signals (O001), the intervention recommendation (O004-R003), the
+response window (R003), and prior escalation history (R005). The
 bird-dogger can adopt or override it. The override is
 recommendation-level and survives re-synthesis on later
 checkpoints in the same shape O003-R004 and O004-R003 commit to.
@@ -76,6 +76,9 @@ target and list-level rendering must show a known state.
 
 - J001-O005-R001 — without a target, an "escalate now" call has
   nowhere to land; R004 reads the chain when synthesizing.
+- J001-O005-R002 — owner-confirmation staleness feeds synthesis
+  as reduced target confidence; R004 surfaces "cannot recommend"
+  when staleness leaves no usable target signal.
 - J001-O005-R003 — response window is a load-bearing input;
   escalating inside an open window is the RSK002 failure R004
   exists to prevent.

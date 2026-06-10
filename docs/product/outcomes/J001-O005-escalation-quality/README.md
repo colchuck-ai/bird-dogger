@@ -36,13 +36,14 @@ the right time.
   show how long the owner has had to respond since the bird-dogger's
   last touch on each item.
 - **J001-O005-R004** - Escalation Timing Recommendation: The product
-  must synthesize signals — slip status, intervention window, response
-  window — into a recommendation of when an item warrants escalation,
-  which the bird-dogger can adopt or override, rather than leaving the
-  timing call entirely to the bird-dogger each checkpoint.
+  must synthesize signals — slip status, intervention recommendation,
+  response window — into a recommendation of when an item warrants
+  escalation, which the bird-dogger can adopt or override, rather than
+  leaving the timing call entirely to the bird-dogger each checkpoint.
 - **J001-O005-R005** - Escalation Record: The product must record each
-  escalation attempt — target, channel, time, and response — and
-  surface that history at the item level.
+  bird-dogger touch on an item — including escalation attempts — with
+  target, channel, time, and response, and surface that history at the
+  item level.
 
 ## Risk-Requirement Map
 
