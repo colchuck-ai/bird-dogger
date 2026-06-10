@@ -14,8 +14,13 @@ the status may no longer reflect reality.
 
 R002 names the *what*: both timestamps are shown per item, not
 collapsed into one "updated" field. It does not prescribe
-precision, display format, or whether the gap itself is computed
-and surfaced separately.
+precision, display format, whether the gap itself is computed
+and surfaced separately, or — for items whose basis spans
+multiple sources with different update times — how the
+per-item "underlying data was last updated" value is picked
+from across sources. The picking rule (max-of, per-source, or
+composite) is engineering-layer; R002 commits only to surfacing
+a single per-item value.
 
 R002 is the per-item parallel of O001-R002 (Assessment Freshness)
 applied to status rather than slip. Two outcomes now carry the

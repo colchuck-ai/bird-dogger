@@ -19,9 +19,11 @@ rule, a tie-breaker, or whether to compute a single "best guess"
 status — the requirement is honesty that sources disagree.
 
 Conflict is shown via the basis (R001) and reduces confidence
-(R003). When an override (R004) is in effect and sources disagree
-with the override, that too is surfaced as a conflict — override-
-vs-source — not silently aligned.
+(R003). Override-vs-source surfacing — when an override (R004)
+is in effect and the inferred reading from sources disagrees
+with it — is not R006's scope; R004 owns it, surfacing the
+disagreement alongside the override rather than silently
+replacing or silently aligning.
 
 ## Edge Cases
 
@@ -29,9 +31,10 @@ vs-source — not silently aligned.
   positive disagreement.
 - Sources agree but each carries weak evidence: not a conflict;
   thinness is carried by R003 confidence, not by R006.
-- Override (R004) disagrees with current source readings:
-  surfaced as a conflict (override-vs-source); override remains
-  the displayed status, but the disagreement is visible.
+- Override (R004) disagrees with current source readings: out
+  of R006's scope; R004 surfaces this disagreement and protects
+  the override. R006 does not flag such items as multi-source
+  conflicts.
 
 ## Examples
 

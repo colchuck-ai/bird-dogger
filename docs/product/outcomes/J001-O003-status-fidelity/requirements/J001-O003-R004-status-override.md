@@ -20,14 +20,18 @@ lifetime of an override.
 The override is first-class in the basis (R001 traces it) and in
 the freshness story (R002 timestamps the override as the last
 assessment). Re-assessment under R005 must not silently replace
-an override.
+an override. When the inferred reading from the current basis
+disagrees with an active override, the disagreement is surfaced
+alongside the override — this is R004's scope, not R006's
+(which owns source-vs-source disagreement only).
 
 ## Edge Cases
 
 - Re-assessment (R005) produces a different status than the
-  override: override is held; the new inferred reading is
-  surfaced as a candidate alongside, treated as a conflict
-  (R006), not silently applied.
+  override: the override is held as the displayed status; the
+  new inferred reading is surfaced alongside the override for
+  the bird-dogger to adopt or dismiss; the override is not
+  silently replaced.
 - Override cleared: status reverts to the current inferred
   reading; the prior override is recoverable in basis history,
   not erased.
@@ -57,9 +61,10 @@ an override.
       re-assessment.
 - [ ] A cleared override remains recoverable in the basis
       history.
+- [ ] When the inferred reading from the current basis disagrees
+      with an active override, the disagreement is surfaced
+      alongside the override.
 
 ## Dependencies
 
 - J001-O003-R001 — override appears in the basis trace.
-- J001-O003-R005 — re-assessment must respect an active
-  override rather than overwrite it.
