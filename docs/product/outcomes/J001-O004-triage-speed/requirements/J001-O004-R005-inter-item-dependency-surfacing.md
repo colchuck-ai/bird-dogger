@@ -72,3 +72,6 @@ mislead triage.
   shape on top of R002's general commitment.
 - J001-O002-R001 — the coverage set scope defines what "in-set"
   means for the in-set vs. out-of-set distinction R005 makes.
+- J001-O002-R006 — active-set refresh keeps "in-set" current
+  between checkpoints; the out-of-set distinction relies on a
+  refreshed picture, not the prior checkpoint's snapshot.

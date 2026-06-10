@@ -65,6 +65,8 @@ than blanked.
 
 - J001-O004-R001 — R001 defines what counts as urgency; R002
   surfaces those signals at the list level.
+- J001-O001-R001 — proactive slip surfacing produces the slip
+  indicator R002 surfaces alongside each item.
 - J001-O001-R002 — per-item assessment freshness is one of the
   signals R002 surfaces (slip-side cousin under PRD002).
 - J001-O003-R001 — status basis is one of the urgency signals;
@@ -72,3 +74,5 @@ than blanked.
   forcing a drill-down.
 - J001-O003-R002 — per-item status freshness is one of the
   signals R002 surfaces (status-side cousin under PRD002).
+- J001-O003-R003 — status confidence is one of the signals R002
+  surfaces alongside the basis summary.

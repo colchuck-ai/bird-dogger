@@ -35,6 +35,10 @@ carried by R004.
 - Two or more items tie on every signal: surfaced as equivalent
   rather than imposing a spurious ordering. The granularity
   commitment is "more than two buckets," not "no ties."
+- Item is blocked by another open item (in-set or out-of-set
+  per R005): the dependency is one of the inputs to urgency;
+  an item whose only path forward is blocked does not silently
+  outrank its blocker.
 
 ## Examples
 

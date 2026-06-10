@@ -9,7 +9,9 @@ synthesis entirely to the bird-dogger each checkpoint.
 
 R001 ranks; R002 surfaces; R003 calls it. The product makes the
 "intervene now" judgment so the bird-dogger does not re-derive
-the threshold from raw signals every checkpoint (RSK003).
+the threshold from raw signals every checkpoint (RSK003), and
+does not have to read down R001's ranking item-by-item to pick
+the next target (the evaluation cost in RSK001).
 
 R003 names the *what*: a per-item recommendation of "intervene
 now" or "not now," derivable from the urgency signals and the
@@ -23,6 +25,15 @@ R003 does not prescribe the synthesis rule (weighting,
 threshold, model). The threshold is engineering-layer; R003
 commits to producing a recommendation that traces to the
 signals it weighed.
+
+The three recommendation states ("intervene now," "not now,"
+"cannot recommend") are a closed set: the override needs a
+stable target and the list-level rendering under R002 must show
+a known state, not a free-text call. This differs from R004,
+where the decision vocabulary is intentionally open — under R004
+the bird-dogger supplies the label and the workflow owns the
+vocabulary; under R003 the product produces the call and a
+closed enum is what the override and the renderers can rely on.
 
 ## Edge Cases
 

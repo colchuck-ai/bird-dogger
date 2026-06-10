@@ -24,6 +24,11 @@ the gap between the prior triage time and the item's current
 assessment + underlying-data timestamps. R004 also records the
 context at the time of the decision (rank, signals,
 recommendation) so the change comparison has a real anchor.
+That recorded context is a snapshot R004 captures from R001,
+R002, and R003 at decision-time and stores; R004 does not
+re-read those requirements live for prior decisions. The
+dependency on R001/R002/R003 is shape-of, not live-on, which
+keeps R004 a memory hub rather than a synthesis hub.
 
 R004 is the memory hub. R003 reads R004 (today's synthesis
 consumes prior decisions); R004 does not read R003 of the same
