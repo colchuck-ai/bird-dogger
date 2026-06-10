@@ -13,6 +13,10 @@ bird-dogger doing the work themselves.
 > control, I want each open item to get to closure without falling through,
 > so commitments are met without me having to do the work myself.
 
+A **checkpoint** is a recurring moment when the bird-dogger reviews the
+active set of open items to decide what needs intervention. The chase
+loop runs from one checkpoint to the next.
+
 #### Outcomes
 
 - **J001-O001** - Slip Detection Lag: Minimize the time between an item

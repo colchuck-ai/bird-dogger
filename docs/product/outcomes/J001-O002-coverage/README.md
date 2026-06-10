@@ -39,9 +39,11 @@ checkpoints.
   bird-dogger add an item to the active set without requiring it to
   exist in any watched source.
 - **J001-O002-R003** - Coverage Gap Discovery: The product must
-  surface candidate sources and candidate items that may be in scope
-  but are not currently being watched, so the bird-dogger can decide
-  whether to add them.
+  surface candidate sources — sources referenced by watched items or
+  otherwise reachable from watched data but not themselves watched —
+  and candidate items — items present in watched sources but excluded
+  from the active set — so the bird-dogger can decide whether to add
+  them.
 - **J001-O002-R004** - Drop-Off Surfacing: The product must surface
   items that have left the active set since the last checkpoint and
   let the bird-dogger keep them in coverage.
@@ -52,11 +54,13 @@ checkpoints.
 - **J001-O002-R006** - Active Set Freshness: The product must refresh
   the active set from watched sources before each checkpoint and
   show when the last refresh occurred.
+- **J001-O002-R007** - Source Registration: The product must let the
+  bird-dogger register a new data source for tracking items.
 
 ## Risk-Requirement Map
 
-- **J001-O002-RSK001**: J001-O002-R002, J001-O002-R003
-- **J001-O002-RSK002**: J001-O002-R001, J001-O002-R003
-- **J001-O002-RSK003**: J001-O002-R001, J001-O002-R004
-- **J001-O002-RSK004**: J001-O002-R001, J001-O002-R005
+- **J001-O002-RSK001**: J001-O002-R002
+- **J001-O002-RSK002**: J001-O002-R001, J001-O002-R003, J001-O002-R007
+- **J001-O002-RSK003**: J001-O002-R004
+- **J001-O002-RSK004**: J001-O002-R005
 - **J001-O002-RSK005**: J001-O002-R006
