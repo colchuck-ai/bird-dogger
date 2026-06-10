@@ -60,5 +60,3 @@ ambiguous).
   successor, not the abandoned original.
 - J001-O002-R003 — migrations into unwatched sources flow into
   gap discovery.
-- J001-O002-R002 — manual captures may need to be linked to a
-  later source record once one exists.

@@ -24,6 +24,14 @@ The bird-dogger's accept of a candidate source flows into R007
 (Source Registration); accept of a candidate item flows into the
 active set.
 
+Rejected candidates carry forward across checkpoints: a rejected
+candidate does not re-surface unless something material about it
+has changed. This is the same carry-forward shape as J001-O004-R004
+(Triage State Carry-Forward) applied to a different decision
+object — O004-R004 carries triage state on items already in the
+active set; R003 carries acceptance state on candidates not yet
+in it. Same pattern, distinct objects.
+
 ## Edge Cases
 
 - Candidate source of an unsupported type: surfaced as a

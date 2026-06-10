@@ -48,8 +48,6 @@ of detail, or whether the two sets are shown together.
 
 ## Dependencies
 
-- J001-O002-R003 — gap discovery surfaces what is *not* in the
-  watched/active sets and depends on those sets being defined.
 - J001-O002-R006 — freshness annotates the active set view shown
   here.
 - J001-O002-R007 — registration creates the entries this view
