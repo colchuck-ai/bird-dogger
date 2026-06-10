@@ -11,6 +11,14 @@ R003/R004 (trajectory comparison) and R005 (silence as signal), and
 brings the items it judges to be slipping to the bird-dogger's
 attention as a distinct set — not buried among healthy items.
 
+When signals disagree on a single item — e.g., trajectory says
+on-track but silence says slipping, or vice versa — R001
+reconciles them into a single per-item reading rather than
+presenting raw signal conflict to the bird-dogger. The
+reconciliation rule is engineering-layer; the requirement is
+that one combined reading per item is surfaced, not multiple
+signal-specific ones.
+
 "Surface" names the *what*: items in scope are presented as
 slipping. It does not prescribe channel, layout, or visual
 treatment.
@@ -52,11 +60,10 @@ treatment.
 
 ## Dependencies
 
-- J001-O001-R002 — surfaced items carry the freshness of the
-  assessment that flagged them.
 - J001-O001-R004 — trajectory comparison is one of the inputs
   this requirement surfaces.
 - J001-O001-R005 — silence is one of the inputs this requirement
   surfaces.
-- J001-O001-R006 — source-unavailability is surfaced alongside,
-  so absence of signal is not read as on-track.
+- J001-O001-R006 — source-unavailability feeds the "cannot
+  assess" state and is surfaced alongside, so absence of signal
+  is not read as on-track.

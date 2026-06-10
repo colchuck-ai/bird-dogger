@@ -22,9 +22,14 @@ data, for any reason.
 - Source is partially available (some items read, others
   failed): per-item rather than source-wide; items that were
   not read show the unavailability on themselves.
-- Source is permanently retired: still surfaced until the
-  bird-dogger explicitly removes it from coverage, so that
-  retirement is a deliberate act, not a silent gap.
+- Source is permanently retired: still surfaced as unavailable
+  until removed from coverage. Source-management
+  (registration, de-registration) lives outside this requirement;
+  R007 owns registration, and a parallel de-registration
+  capability is not yet in scope at this outcome's requirement
+  layer — flagged for O002 alongside R007. Until that capability
+  exists, retired sources continue to surface as unavailable
+  rather than silently disappear.
 
 ## Examples
 

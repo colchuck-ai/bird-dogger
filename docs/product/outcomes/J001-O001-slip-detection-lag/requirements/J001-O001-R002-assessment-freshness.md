@@ -7,9 +7,13 @@ assessed.
 
 Assessment freshness is a per-item timestamp answering "when did
 the product last evaluate whether this item is slipping?"
-Distinct from the item's own data-update time (that belongs to
-O003 R002): freshness here is about the product's own
-assessment, not the underlying source's last write.
+Distinct from O003-R002, which carries two other per-item
+timestamps: (a) when the item's tracked status was last assessed
+— same shape as this freshness, different object (item status,
+not slip status); (b) when the item's underlying source data was
+last updated — different object entirely (source write time).
+All three per-item timestamps coexist; this R002 owns the
+slip-status assessment time.
 
 Freshness is shown wherever an item's slip state is shown —
 both in the surfaced slipping set (R001) and at the item
