@@ -44,10 +44,12 @@ the right time.
   bird-dogger touch on an item — including escalation attempts — with
   target, channel, time, and response, and surface that history at the
   item level.
+- **J001-O005-R006** - Escalation Contact Registration: The product
+  must let the bird-dogger register an escalation contact for an item.
 
 ## Risk-Requirement Map
 
-- **J001-O005-RSK001**: J001-O005-R001, J001-O005-R002
+- **J001-O005-RSK001**: J001-O005-R001, J001-O005-R002, J001-O005-R006
 - **J001-O005-RSK002**: J001-O005-R003, J001-O005-R004
 - **J001-O005-RSK003**: J001-O005-R004
 - **J001-O005-RSK004**: J001-O005-R005
