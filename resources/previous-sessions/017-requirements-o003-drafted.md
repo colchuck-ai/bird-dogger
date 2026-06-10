@@ -1,6 +1,6 @@
 # Session 017 — Drafted requirement documents for O003 Status Fidelity
 
-## Missing session 016
+## Missing session 016 — explicit user decision to leave it gone
 
 A judge session on the O002 requirement docs (the natural session
 016 in this sequence) was run by the user out-of-band and is **not
@@ -10,16 +10,30 @@ the right next move; that work happened, but its findings, hold
 decisions, and any prunes to the O002 dep graph are not written
 down here.
 
-**Standing for next session:** before judging O003 (or opening the
-PDR session in S015's deferred list), reconstruct or re-run the
-O002 judge so its findings are durable. Several O002 standing flags
-named in S015 ("R001 ↔ R003 cycle," "R001 ↔ R007 cycle," "R002 ↔
-R005 cycle," "R003 rejected-candidates vs. O004-R004," "R008 de-
-registration gap") may already be resolved in the missing 016 —
-this session cannot tell.
+**User decision (recorded this session):** do not recover or re-run
+session 016. The gap stands. Future sessions should **not** propose
+reconstructing it.
 
-This session did not consult the missing 016 (no artifact to read)
-and proceeded as if O002 were drafted-but-not-judged.
+**Consequences of that decision — load-bearing for what follows:**
+
+- The O002 R-docs in `docs/product/outcomes/J001-O002-coverage/
+  requirements/` are the canonical artifact of the judge pass, not
+  the draft state described in S015. Any S015 standing flag on
+  O002 ("R001 ↔ R003 cycle," "R001 ↔ R007 cycle," "R002 ↔ R005
+  cycle," "R003 rejected-candidates vs. O004-R004," "R008 de-
+  registration gap," "R004 'in one action' softness," "R005
+  ambiguous-migration verifiability," "R006 refresh trigger")
+  that is **no longer visible in the O002 docs** should be
+  treated as resolved by 016 and dropped, not re-raised.
+- Standing flags still visible in the O002 docs are still
+  standing — 016's judge did not address them.
+- Any future session that needs to know "what did 016 decide
+  about flag X" should diff S015's described draft state against
+  the current O002 R-docs and infer. There is no other record.
+
+This session did not consult the missing 016 (no artifact to
+read) and drafted O003 from the README + sibling-doc style only,
+not from O002's post-judge state.
 
 ## Goal
 
@@ -283,9 +297,10 @@ New this session:
 - **R005 timing bound to checkpoint cadence** rather than clock
   interval. Verifiable but couples R005 to a checkpoint
   assumption not formalized elsewhere.
-- **Missing session 016 (O002 judge).** Findings exist in the
-  user's head; not in the repo. Recover or re-run before
-  judging O003.
+- **Missing session 016 (O002 judge) — accepted as standing
+  gap by user this session.** No recovery, no re-run. Do not
+  re-raise. Method for reading 016's findings: diff S015's
+  described draft state against the current O002 R-docs.
 
 Promoted / sharpened PDR-candidates (deferred since S014;
 pressure increased again this session):
@@ -306,12 +321,12 @@ pressure increased again this session):
 
 Carried forward:
 
-- **All O002 standing flags from S015** ("R001 ↔ R003 cycle,"
-  "R001 ↔ R007 cycle," "R002 ↔ R005 cycle," "R003 rejected-
-  candidates vs. O004-R004," "R008 de-registration gap," "R004
-  'in one action' softness," "R005 ambiguous-migration
-  verifiability," "R006 refresh trigger") — possibly resolved
-  in the missing 016, not knowable from this session.
+- **O002 standing flags from S015** — read from the current
+  O002 R-docs, not from S015's draft-state list. Anything S015
+  flagged that no longer appears in the O002 docs is resolved
+  by the missing 016 and dropped. Anything still visible is
+  still standing. See the "Missing session 016" section for
+  the method.
 - **O001-RSK002 single-mitigation fragility.** Standing from
   S006. Unchanged.
 - **No-owner-at-all seam between O002 and O005.** Standing from
@@ -340,12 +355,10 @@ Cleared:
 
 ## Recommended next step
 
-1. **Recover or re-run session 016 (O002 judge).** Without it,
-   any judge pass on O003 will rediscover findings that may
-   already exist; and the O002 R-docs may carry standing flags
-   that have already been resolved. This is the most expensive
-   thing to leave undone right now.
-2. **Open the PDR session.** S014 → S015 → S017 have each
+(Note: session 016 recovery is **off the table** by user decision
+this session — do not propose it. See "Missing session 016.")
+
+1. **Open the PDR session.** S014 → S015 → S017 have each
    recommended this; the pressure has tripled. Two PDRs worth
    opening together:
    - "Cannot assess" / coverage-over-precision posture (now
@@ -355,8 +368,8 @@ Cleared:
    Likely worth folding in R007 Source Registration as a third
    PDR in the same session since the cross-outcome-capability
    shape is the common theme.
-3. **Judge session on the six O003 requirement docs** (after 1
-   and 2). Likely-fruitful prompts (in priority order):
+2. **Judge session on the six O003 requirement docs.** Likely-
+   fruitful prompts (in priority order):
    - R002 ↔ O001-R002 parallel-pattern dep — accept the
      declared-as-parallel framing or push it harder.
    - R004 "candidate alongside override" subtype — lift to R001
@@ -367,7 +380,7 @@ Cleared:
    - R005 timing bound to checkpoint cadence — adequate or too
      tightly coupled?
    - R005 detection mechanism — engineering or requirement?
-4. **Then decide on O004 / O005 drafting.** If the PDRs land,
+3. **Then decide on O004 / O005 drafting.** If the PDRs land,
    their per-requirement docs will be substantially smaller (no
    repeated posture, no repeated freshness shape, no repeated
    registration paragraph). If the PDRs don't land first, the
