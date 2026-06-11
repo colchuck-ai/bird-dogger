@@ -41,8 +41,7 @@ Each R-doc currently re-derives this posture in its own Detail or
 Edge Cases section. Without a recorded decision, every new
 requirement in O004 / O005 will repeat the derivation, drift on
 wording, or get prompted into a different posture by review
-pressure. Pressure has been flagged across S014, S015, S017, and
-S018.
+pressure.
 
 ## Options
 

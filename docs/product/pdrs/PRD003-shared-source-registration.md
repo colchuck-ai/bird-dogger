@@ -25,8 +25,7 @@ risk-requirement maps point at them from different risks:
 Without a recorded decision, future judges may push to deduplicate
 at the requirement layer — collapse one R007 into the other, or
 lift it to product-level — and lose the per-outcome trace that
-each outcome's local read relies on. Pressure flagged across
-S015, S017, and S018.
+each outcome's local read relies on.
 
 ## Options
 

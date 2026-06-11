@@ -34,8 +34,6 @@ references are explicit ("same shape as O003-R004") but the shape
 itself lives nowhere central — every new requirement that produces
 a per-item judgment will repeat the derivation, drift on wording,
 or get prompted into a different posture by review pressure.
-Pressure flagged across S017, S018, S021, S022, and confirmed
-ripe in S023.
 
 The shape carries two coupled commitments:
 

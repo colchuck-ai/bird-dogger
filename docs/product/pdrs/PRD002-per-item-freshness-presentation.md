@@ -31,8 +31,7 @@ O004 R-docs that synthesize urgency (R002 List-Level Urgency
 Signals, R004 Triage State Carry-Forward) and any future O005
 R-doc that drives escalation timing will need freshness alongside
 their list views — the fourth and fifth instances if drafted
-without a recorded shape. Pressure flagged across S015, S017, and
-S018.
+without a recorded shape.
 
 ## Options
 
