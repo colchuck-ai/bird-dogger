@@ -91,10 +91,16 @@ legitimately needs the capability, PRD003's pattern applies.
 - [ ] A registration request for a chain shape the product does not
       support is explicitly surfaced, not silently dropped.
 - [ ] When the bird-dogger registers an owner over a source-derived
-      one, both are visible; the source-derived value is not silently
-      dropped.
+      one, the bird-dogger's registration is taken as the recorded
+      owner and the source-derived value is surfaced alongside as a
+      disagreement in the same view R001 surfaces the chain, not
+      silently dropped.
 
 ## Dependencies
 
 - J001-O005-R001 — R006 populates the chain R001 surfaces; the
   registered contact is meaningful only because R001 presents it.
+- J001-O005-R002 — R006 produces the owner R002 times; per EC1, the
+  bird-dogger's registration counts as a confirmation event, so R002's
+  freshness signal applies to bird-dogger-registered owners as to
+  source-derived ones.
