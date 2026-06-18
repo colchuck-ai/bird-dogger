@@ -9,17 +9,23 @@ source types.
 ## Context
 
 [Engineering README](../README.md) commits to a source-type-agnostic
-`C005` Source Adapter contract: "Jira is the first source type. The
-Source Adapter contract must be source-type-agnostic so future source
-types (other trackers, doc systems, message platforms) plug in without
-changes to the Reasoning band." Jira is the only concrete adapter
-declared so far.
+`C005` Source Adapter contract: the contract must stay
+source-type-agnostic so future source types (other trackers, doc
+systems, message platforms) plug in without changes to the
+Reasoning band. Jira-flavored adapters are the only concrete
+realizations declared so far — `jira-cloud` (Atlassian-hosted)
+and `jira-dc` (self-hosted Data Center) are two distinct source
+types but a single adapter family at the wire level (same query
+semantics, different auth and endpoint conventions). They do not
+exercise the contract's source-type-agnostic claim because they
+share too much.
 
-The contract claim is testable only when a second adapter exists. Until
-then, "source-type-agnostic" is an aspiration that ships untested:
-implementation details of the Jira adapter (auth shape, pagination,
-error model, availability semantics) tend to bleed into the contract
-without a sibling adapter to push back.
+The contract claim is testable only when a second, genuinely
+different adapter exists. Until then, "source-type-agnostic" is
+an aspiration that ships untested: implementation details of the
+Jira adapter family (auth shape, pagination, error model,
+availability semantics) tend to bleed into the contract without a
+sibling adapter to push back.
 
 Three concrete use cases pull in the same direction:
 

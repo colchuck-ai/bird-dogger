@@ -126,6 +126,41 @@ predecessor's id, not at the new entity.
 alongside the name so a bird-dogger editing the TOML by hand can
 match either form.
 
+### Hand-edit reconciliation
+
+The TOML config file is mutable from the CLI and from a text
+editor. The boundary between the two paths is the `id` field.
+
+**Adding a new entity by hand.** The bird-dogger writes the
+entity's declaration with its name, type, and value fields and
+*omits* the `id`. The next CLI invocation that reads the TOML
+detects the missing `id`, assigns a `bdog<kind>-<n>`, writes it
+back, and emits a one-line acknowledgement
+(`assigned bdogselector-7 to selector "supply-incidents"`). Any
+cross-reference to the new entity is wired up afterward — either
+by the bird-dogger running a CLI verb that resolves the name and
+writes the id (e.g., `bdog hunt selector add supply-q3
+supply-incidents`), or by the bird-dogger reading the printed id
+and hand-editing the cross-reference's id list directly.
+
+**Editing an existing entity by hand.** Renames, field changes,
+and removals via text editor are supported and equivalent to
+their CLI counterparts. The `id` field must not be edited or
+deleted by hand; the CLI is the canonical id assigner.
+Hand-written ids that collide with existing ids or skip the
+sequence cause the next CLI invocation to fail fast and instruct
+the bird-dogger to remove the hand-written id and re-run so the
+CLI can assign a fresh one.
+
+**Cross-references must use the id form.** Per the
+[engineering README](../README.md)'s C002 description,
+cross-entity references inside the TOML key on the id, not the
+name. A bird-dogger wiring up a new cross-reference by hand must
+use the id (visible in `bdog <noun> info` and `bdog <noun> list`
+output). The CLI's name-or-id input acceptance applies to
+command-line arguments, not to the on-disk TOML cross-reference
+fields.
+
 ## Removal semantics
 
 Two postures:
@@ -897,9 +932,12 @@ bdog source remove ttd-jira
 
 ## Renderer surfaces
 
-C015's PRD obligations land at composition time, not just at
-render time: which columns the table carries, which states the
-columns accept, and how disagreement and uncertainty are signaled.
+The bugel and item-info output shapes are part of the design,
+not implementation detail. C015's rendering obligations
+(PRD001 readability, PRD002 two-timestamp distinctness, PRD004
+override marker handling) and C011's list-level signal-selection
+obligation (J001-O004-R002 — which urgency-driving facts appear
+on each row) both have concrete commitments here.
 This section names the shape of each rendering verb's output so
 the obligations from
 [PRD001 (coverage over precision)](../../product/pdrs/PRD001-coverage-over-precision.md),
@@ -1182,7 +1220,9 @@ hunt."
 
 **Renderer surfaces are part of the design, not implementation
 detail.** C015 carries PRD001 / PRD002 / PRD004 readability
-obligations at composition time. Per-verb output shapes are
-specified above so uncertainty states, two-timestamp freshness,
-and override disagreement have concrete columns and markers —
-not "we'll figure out the display later."
+obligations at the rendering layer; C011 carries the
+list-level signal-selection obligation
+(J001-O004-R002) on its synthesis output. Per-verb output
+shapes are specified above so uncertainty states,
+two-timestamp freshness, and override disagreement have concrete
+columns and markers — not "we'll figure out the display later."

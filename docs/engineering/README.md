@@ -2,10 +2,13 @@
 
 Birddog is a single Go binary (`bdog`) that runs the bird-dogging
 chase loop on the bird-dogger's local machine. It reads from
-authenticated external sources (Jira first; `local-json` files as a
-second first-class type), assesses items pulled into a hunt's
-coverage, and renders the resulting list at each on-demand
-checkpoint via `bdog hunt bugel`.
+authenticated external sources (Jira via `jira-cloud` and
+`jira-dc` source types; `local-json` files as a third first-class
+type), assesses items pulled into a hunt's coverage, and renders
+the resulting list at each on-demand checkpoint via
+`bdog hunt bugel` — `bugel` is the CLI's chase-metaphor name for
+the product's checkpoint moment; the [CLI design
+doc](design-docs/cli.md) carries the full rationale.
 All persistent runtime state — items, assessments, overrides, notes,
 the touch log — lives in one local SQLite database; declared
 sources, selectors, hunts, contacts, and chains live in one TOML
@@ -49,7 +52,10 @@ hands results to the Renderer. It never writes back to sources.
   timestamps — last-assessed and last-underlying-data-change —
   kept distinct; the active set carries a separate set-level
   last-refresh marker. Realizes
-  [PRD002](../product/pdrs/PRD002-per-item-freshness-presentation.md).
+  [PRD002](../product/pdrs/PRD002-per-item-freshness-presentation.md)
+  for the per-item shape, and extends it with a separate
+  set-level marker for active-set freshness — the cousin shape
+  PRD002 acknowledges but does not itself commit to.
 - **One Source Registration capability.** The duplicate-at-the-
   requirement-layer source registration (J001-O001-R007 and
   J001-O002-R007) is realized by a single component bundle
@@ -101,11 +107,12 @@ hands results to the Renderer. It never writes back to sources.
 - XDG Base Directory layout on Linux, OS-equivalent paths on
   macOS and Windows: config in `${XDG_CONFIG_HOME}/bdog/`, data
   in `${XDG_DATA_HOME}/bdog/`.
-- Read-only access to external sources. The product writes
-  nothing back to Jira or any future source.
-- Jira is the first source type; `local-json` is a second
-  first-class type that exercises the source-type-agnostic
-  contract (see
+- Three source types are first-class: `jira-cloud`
+  (Atlassian-hosted Jira), `jira-dc` (self-hosted Jira Data
+  Center), and `local-json` (file-backed). Cloud and DC are
+  distinct types because they differ in auth, endpoints, and
+  rate-limit model despite sharing query semantics; `local-json`
+  exercises the source-type-agnostic contract claim (see
   [ADR005](adrs/ADR005-local-json-source-type.md)). The Source
   Adapter contract must stay source-type-agnostic so future
   source types (other trackers, doc systems, message platforms)
@@ -182,6 +189,19 @@ references, active flag), contacts (`name`, channel handles), and
 chains (ordered contact references). Re-read fresh on every CLI
 invocation. Holds no secrets.
 
+Each declared entity carries a stable internal `id` field
+alongside its bird-dogger-chosen name, of shape `bdog<kind>-<n>`
+where `<kind>` is one of `source`, `selector`, `hunt`, `contact`,
+or `chain` and `<n>` is a monotonically increasing integer scoped
+per kind. Cross-entity references inside the TOML key on the id,
+not the name — a hunt's selector list, a chain's contact members,
+and an item's chain or owner reference all carry ids. This keeps
+`--rename` local: a name change rewrites the entity's name field
+without touching any reference. The CLI is the canonical id
+assigner; the [CLI design doc](design-docs/cli.md) covers the
+hand-edit reconciliation rule for new entities a bird-dogger adds
+by editing the TOML directly.
+
 #### Relationships
 
 - **C001**: read by every command; written by config CRUD verbs.
@@ -223,12 +243,18 @@ source declarations on edit and on read.
 ### C005 - Source Adapter
 
 Source-type-specific contract for reading items from one external
-source and reporting source availability. The Jira implementation
-is the first realization;
-[ADR005](adrs/ADR005-local-json-source-type.md) commits to a
-`local-json` file-backed adapter as the second, exercising the
-source-type-agnostic contract claim. Future source types implement
-the same contract. Read-only per
+source and reporting source availability. Three source types
+realize the contract: `jira-cloud` (Atlassian-hosted Jira),
+`jira-dc` (self-hosted Jira Data Center), and `local-json`
+(file-backed). Cloud and DC are distinct types because they
+differ in auth shape, REST endpoints, and rate-limit model
+despite sharing query semantics; the C005 contract stays one,
+the realizations differ.
+[ADR005](adrs/ADR005-local-json-source-type.md) commits to
+`local-json` as the second concrete adapter exercising the
+source-type-agnostic claim. Future source types (other trackers,
+doc systems, message platforms) plug in the same way.
+Read-only per
 [ADR003](adrs/ADR003-read-only-against-sources.md).
 
 #### Relationships
@@ -371,8 +397,13 @@ per-item urgency ranking, intervention recommendation, and
 escalation timing recommendation. Carries "cannot recommend"
 explicitly when inputs are insufficient, per Coverage-over-
 Precision composed with the override mechanism (PRD001 + PRD004).
-Writes nothing back to its inputs; emits a synthesis result
-consumed by C015.
+Also emits a per-item list-level signal pack — which urgency-
+driving facts to surface alongside each row, ranked by salience
+to that item's urgency — per J001-O004-R002. The signals
+themselves are produced under O001 (slip / assessment) and O003
+(status); selecting which appear at the list level is a
+synthesis decision, not a rendering one. Writes nothing back to
+its inputs; emits a synthesis result consumed by C015.
 
 #### Relationships
 
@@ -468,13 +499,13 @@ counterpart to source/selector/hunt registries in Connection.
 ### C015 - Renderer
 
 Produces tabular CLI output for list-level views and item-level
-detail views. Owns list-level signal selection per J001-O004-R002
-(which urgency-driving facts appear on each row, at what
-density), and carries the readability obligations from PRD001
-(uncertainty / disagreement states stay readable, not buried) and
-PRD002 (two timestamps surfaced distinctly per item) — at
-composition time, not only at render time. Writes only to
-stdout/stderr; holds no state.
+detail views. Carries the readability obligations from PRD001
+(uncertainty / disagreement states stay readable, not buried)
+and PRD002 (two timestamps surfaced distinctly per item) at the
+rendering layer — column layout, density given table width,
+overflow behavior, marker glyphs. Renders the per-item signal
+pack C011 emits; does not pick which signals matter (that's
+synthesis). Writes only to stdout/stderr; holds no state.
 
 #### Relationships
 
@@ -561,9 +592,10 @@ components that satisfy each requirement.
 - **J001-O003-R005** — Re-Assessment On Change: C008, C009
 - **J001-O003-R006** — Conflict Surfacing: C009
 - **J001-O004-R001** — Urgency Ranking: C011
-- **J001-O004-R002** — List-Level Urgency Signals: C015
-  (list-level signal selection; the signals themselves are
-  produced under O001 and O003)
+- **J001-O004-R002** — List-Level Urgency Signals: C011
+  (list-level signal selection — which signals surface per row
+  at the list view; the signals themselves are produced under
+  O001 and O003 and rendered by C015)
 - **J001-O004-R003** — Intervention Recommendation: C011, C010
 - **J001-O004-R004** — Triage State Carry-Forward: C012 (Note
   Store: prior notes plus snapshot surface at the next
