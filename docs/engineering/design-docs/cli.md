@@ -1192,7 +1192,8 @@ event, advancing a state machine, or producing a new timestamp
 value-less flag anti-pattern, keeps `set`'s semantics narrowly
 field-update, and gives each action a clear failure surface
 (`item accept` errors with `already in active set`; `set` has no
-equivalent state-machine error to report).
+equivalent state-machine error to report). See
+[ADR009](../adrs/ADR009-side-effecting-actions-on-dedicated-verbs.md).
 
 **Active / inactive hunts.** Hunts carry an active flag;
 default-arg `hunt bugel` operates on active hunts only.
