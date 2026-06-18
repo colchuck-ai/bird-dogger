@@ -134,7 +134,8 @@ maintains.
   the scope axis at the component layer. The two together let the
   bird-dogger declare one source plus one selector library and
   compose hunts freely.
-- A future requirement for selector versioning (the bird-dogger wants
-  to update a JQL but keep the prior shape for a winding-down hunt)
-  would supersede this ADR with a versioning model. Current framing
-  assumes selectors are mutable in place and propagate immediately.
+- Selector versioning is explicitly deferred. There is no requirement
+  to keep prior selector shapes for winding-down hunts; selectors
+  remain mutable in place until a concrete requirement forces a
+  versioning model. If that requirement arises, it will require a
+  new decision — it is not on the roadmap.
