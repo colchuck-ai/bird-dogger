@@ -1,0 +1,8 @@
+issue_prefix: bd
+issue-prefix: bd
+dolt.auto-start: false
+export.auto: false
+gc.endpoint_origin: inherited_city
+gc.endpoint_status: verified
+
+sync.remote: "git+https://github.com/colchuck-ai/bird-dogger.git"
