@@ -120,8 +120,9 @@ contract regardless of how the verb was named.
   `source set`.
 - No `--clear-token` flag exists on any verb. A source's credential is
   removed by removing the source declaration (`source remove`). The
-  no-cascade-removal rule in the CLI design doc ensures that a source
-  with active consumers cannot be silently removed.
+  no-cascade-removal rule (see
+  [ADR007](ADR007-no-cascade-removal.md)) ensures that a source with
+  active consumers cannot be silently removed.
 - C003 Credential Store's write paths are `source add` (new token) and
   `source rotate-token` (replacement). Both originate from interactive
   prompt or env-var reads. No CLI-layer code delivers a token string to
