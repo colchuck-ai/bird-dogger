@@ -1158,6 +1158,7 @@ history is preserved per
 [PRD004](../../product/pdrs/PRD004-override-surfacing.md).
 Touches and notes are hard-deleted on remove — they correct a
 recording mistake and carry no equivalent history obligation.
+See [ADR008](../adrs/ADR008-history-posture-per-record-type.md).
 
 **Notes are distinct from overrides and touches; the flag names
 say so.** Overrides correct closed-vocabulary judgments
