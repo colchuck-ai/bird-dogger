@@ -212,11 +212,14 @@ by editing the TOML directly.
 
 Resolves a source secret via the OS keyring first, then the
 `BDOG_SOURCE_<NAME>_TOKEN` env-var fallback. Owns keyring
-read/write paths for source tokens. Asked only for sources whose
-type declares a secret; tokenless types (e.g., `local-json` per
-[ADR005](adrs/ADR005-local-json-source-type.md)) skip C003
-entirely. The auth method (Basic, Bearer, etc.) is the Source
-Adapter's concern; C003 only stores and returns the secret
+read/write paths for source tokens. Tokens are only written via
+interactive prompt or the env-var — no CLI flag carries a secret
+string into C003. See
+[ADR010](adrs/ADR010-tokens-never-via-cli-flag.md). Asked only
+for sources whose type declares a secret; tokenless types (e.g.,
+`local-json` per [ADR005](adrs/ADR005-local-json-source-type.md))
+skip C003 entirely. The auth method (Basic, Bearer, etc.) is the
+Source Adapter's concern; C003 only stores and returns the secret
 string.
 
 #### Relationships

@@ -1179,7 +1179,8 @@ an embedded field.
 appear in shell history and process lists. `source add` (for
 token-bearing types) and `source rotate-token` always prompt
 interactively. `BDOG_SOURCE_<NAME>_TOKEN` provides the headless
-path for CI and scripted environments.
+path for CI and scripted environments. See
+[ADR010](../adrs/ADR010-tokens-never-via-cli-flag.md).
 
 **Side-effecting actions live on their own verbs, not as flags
 on `set`.** `source rotate-token`, `hunt activate`,
