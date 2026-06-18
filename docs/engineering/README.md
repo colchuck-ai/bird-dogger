@@ -147,30 +147,22 @@ hands results to the Renderer. It never writes back to sources.
 
 Parses subcommands and arguments, dispatches to the relevant
 State or Reasoning component, and pipes results to the Renderer.
-Owns the `bdog` binary entry point. Configuration nouns —
-`source`, `selector`, `hunt`, `contact`, `chain` — each carry the
-standard `add | remove | info | list | set` CRUD shape; chase
-nouns — `item`, `override`, `touch`, `note` — carry the same CRUD
-shape over per-item state. Action verbs sit alongside CRUD where
-the operation does not fit field-update semantics: `source
-test`, `source rotate-token`, `selector test`, `hunt activate`,
-`hunt deactivate`, `hunt bugel`, `item accept`, `item reject`,
-`item carry-forward`, `item confirm-owner`, `touch
-record-response`. The bugel sequences refresh → re-assess →
+Owns the `bdog` binary entry point; the [CLI design
+doc](design-docs/cli.md) is the sole owner of the full verb
+surface. Configuration nouns — source, selector, hunt, contact,
+chain — each support declaration and lifecycle management; chase
+nouns — item, override, touch, note — support per-item state
+management. The bugel subcommand sequences refresh → re-assess →
 synthesize → render for one or more hunts and is the only
-refresh path; `bdog hunt bugel --no-refresh` re-synthesizes
-against current State without pulling sources. Tokens entered
-through the CLI flow to C003, never to C002. Exact verb syntax,
-flag layout, idempotence rules, item ID disambiguation, renames,
-timestamp formats, and renderer surfaces live in the
-[CLI design doc](design-docs/cli.md).
+refresh path; a no-refresh variant re-synthesizes against current
+State without pulling sources. Tokens entered through the CLI
+flow to C003, never to C002.
 
 #### Relationships
 
 - **C002**: reads declared sources, selectors, hunts, contacts,
   and chains; writes config edits.
-- **C003**: writes new tokens on `source add` / `source
-  rotate-token`.
+- **C003**: writes new tokens during source credential setup.
 - **C004, C006, C014, C017**: writes registrations and edits.
 - **C007, C016**: writes manual item captures, expected
   trajectories, inter-item dependencies, accepted candidates, and
@@ -274,18 +266,17 @@ Holds the declared hunts. Each hunt is a named set of selector
 references resolved via C017, plus an active flag. The selector
 set is unordered: the refresh stage walks all referenced
 selectors per bugel without bird-dogger-controlled ordering.
-Active hunts are subject to no-argument `bdog hunt bugel`;
-inactive hunts are skipped by default and included only via
-explicit naming or `--all`. Inactive status preserves the hunt's
+Active hunts run at each checkpoint; inactive hunts are skipped
+by default but can be included on demand. Inactive status
+preserves the hunt's
 declaration and history without re-running it each cadence.
 Validates that referenced selectors exist in C017.
 
 #### Relationships
 
-- **C001**: written by `hunt` declaration verbs (add, remove,
-  info, list, set) and by `hunt activate` / `hunt deactivate`
-  and by `hunt selector` membership verbs; validates and
-  delegates persistence to C002.
+- **C001**: written by hunt declarations and lifecycle
+  management (activation, deactivation, and selector membership
+  edits); validates and delegates persistence to C002.
 - **C002**: hunt declarations and selector references live here.
 - **C017**: validates selector references; resolves selectors at
   refresh time.
@@ -386,8 +377,8 @@ recoverable in history.
 
 #### Relationships
 
-- **C001**: written by `override` verbs parameterized by
-  `<field>` (`status`, `intervention`, `escalation-timing`).
+- **C001**: written by override declarations targeting produced
+  judgments.
 - **C009, C011**: read at render time so the override stands as
   the displayed value with disagreement surfaced alongside.
 - **C015**: receives override + produced output as a pair.
@@ -432,8 +423,7 @@ the same way touches do. SQLite-backed.
 
 #### Relationships
 
-- **C001**: written by `note` verbs (`add`, `remove`, `info`,
-  `list`, `set`).
+- **C001**: written by note declarations and management.
 - **C007**: references items by stable internal id.
 - **C009, C010, C011**: read at write time to capture the
   context snapshot (rank, signals, active overrides,
@@ -448,16 +438,16 @@ the same way touches do. SQLite-backed.
 Append-only log of bird-dogger touches on items, including
 escalation attempts: target (a C014 contact, typically resolved
 through a chain member), channel, time, response state, and a
-`type` field distinguishing `escalation` from `checkin`. Both
-types share the same record shape. The per-item response window
+`type` field distinguishing touch kinds. The record shape is
+shared across all touch types. The per-item response window
 (now − most-recent-touch time) is derived by readers from the
 log, not stored; C013 anchors the derivation by holding the
 touch times.
 
 #### Relationships
 
-- **C001**: written by `touch` verbs; the `type` field carries
-  the escalation/checkin distinction at write time.
+- **C001**: written by touch declarations; the `type` field
+  records the touch kind at write time.
 - **C007, C014**: references items by stable id and contacts by
   name.
 - **C011**: read as a synthesis input for timing recommendation
@@ -470,7 +460,7 @@ touch times.
 Two layers. The declarative layer holds bird-dogger-registered
 contacts (people, with channel handles) and named ordered chains
 that reference them; both are top-level entities the bird-dogger
-maintains via `contact` and `chain` CRUD verbs (persisted as
+maintains via contact and chain declarations (persisted as
 sibling tables in C002). The state layer holds per-item owner
 references with owner-confirmation freshness and per-item
 source-derived contact data; disagreements between
@@ -487,11 +477,10 @@ counterpart to source/selector/hunt registries in Connection.
 
 #### Relationships
 
-- **C001**: written by `contact` and `chain` declaration verbs,
-  by `chain member` membership verbs, by `item set --owner` /
-  `item confirm-owner`, and by `item set --chain`. Also written
-  on `source add` when source-derived owners enter via the
-  adapter.
+- **C001**: written by contact and chain declarations, by chain
+  membership edits, by item-owner assignment and confirmation,
+  and by item-chain assignment. Also written when source-derived
+  owners enter via the adapter.
 - **C002**: contact and chain declarations live here.
 - **C007**: per-item references resolve to C007's internal item
   ids; contacts and chains are referenced by name.
@@ -503,7 +492,9 @@ counterpart to source/selector/hunt registries in Connection.
 ### C015 - Renderer
 
 Produces tabular CLI output for list-level views and item-level
-detail views. Carries the readability obligations from PRD001
+detail views; per-verb output shapes live in the [CLI design
+doc](design-docs/cli.md) under "Renderer surfaces." Carries the
+readability obligations from PRD001
 (uncertainty / disagreement states stay readable, not buried)
 and PRD002 (two timestamps surfaced distinctly per item) at the
 rendering layer — column layout, density given table width,
@@ -547,9 +538,8 @@ last refreshed when."
 
 Holds the declared set of selectors per
 [ADR004](adrs/ADR004-selectors-as-first-class-declarations.md).
-Each selector is a named `(source, selector-type, value)` triple
-— `selector-type` is `project`, `jql`, `filter`, or future
-source-type-specific shapes. Resolves a selector name to its
+Each selector is a named `(source, selector-type, value)` triple.
+Resolves a selector name to its
 triple on demand and validates that the referenced source exists
 in C004. The same selector can back many hunts; editing a
 selector propagates to every referencing hunt on the next
@@ -558,9 +548,8 @@ sets for the auth axis and ADR004 extends to the scope axis.
 
 #### Relationships
 
-- **C001**: written by `selector` declaration verbs (add,
-  remove, info, list, set) and exercised by `selector test`;
-  validates and delegates persistence to C002.
+- **C001**: written by selector declarations and tested on
+  demand; validates and delegates persistence to C002.
 - **C002**: selector declarations live here.
 - **C004**: validates source references.
 - **C006**: hunts reference selectors by name; C006 validates
