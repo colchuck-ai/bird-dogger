@@ -1150,7 +1150,9 @@ reserved as an entity name and cannot collide with a real value.
 `bdog contact set <name> --clear-email` clears a free-text
 channel handle where `"none"` could legitimately be a real
 value. Choosing the shape by field type keeps the sentinel safe
-where it is safe and unambiguous where it isn't.
+where it is safe and unambiguous where it isn't. See
+[ADR011](../adrs/ADR011-two-clearing-shapes.md) for the full
+decision and rationale.
 
 **`override remove` deactivates; `touch remove` and `note
 remove` hard-delete.** Overrides are deactivated on remove —
