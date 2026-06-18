@@ -1094,16 +1094,13 @@ half-updated reference. The CLI accepts the name on input and
 prints the id in `info` and `list` for hand-editing the TOML.
 
 **Native `bdog<kind>-<n>` ids; source ids accepted with
-collision-fail.** Items, notes, and touches each carry their own
-native id under one scheme: `bdogitem-<n>`, `bdognote-<n>`,
-`bdogtouch-<n>`. The shared `bdog` prefix names the binary; the
-kind segment disambiguates entity type without a separate lookup.
-Source-derived items also carry their source id as an alias;
-commands accept either form, and ambiguous source ids fail fast
-with the matching items listed so the bird-dogger uses the
-unambiguous native id. This prevents silent cross-source
-collisions and keeps manual and source-derived items on the same
-identity footing.
+collision-fail.** See
+[ADR006](../adrs/ADR006-native-id-scheme.md) for the full
+decision and rationale. In brief: items, notes, and touches each
+carry their own native id under one scheme — `bdogitem-<n>`,
+`bdognote-<n>`, `bdogtouch-<n>` — with source-derived items also
+carrying their source id as an alias. Commands accept either form;
+ambiguous source ids fail fast with matches listed.
 
 **Selectors are top-level, not hunt-owned.** A selector's
 definition (source, query, type) is independent of which hunts

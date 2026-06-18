@@ -291,10 +291,11 @@ Validates that referenced selectors exist in C017.
 
 ### C007 - Item Store
 
-Owns per-item facts: stable internal id (distinct from source
-ids), origin tag (manual vs. source-derived), migration links
-across moved source records, recorded expected trajectories, and
-inter-item dependencies. Also holds the per-item assessment
+Owns per-item facts: stable internal id of shape `bdogitem-<n>`
+per [ADR006](adrs/ADR006-native-id-scheme.md) (distinct from
+source ids), origin tag (manual vs. source-derived), migration
+links across moved source records, recorded expected trajectories,
+and inter-item dependencies. Also holds the per-item assessment
 readings and basis traces C009 writes back, and the per-item
 underlying-data-change timestamp C008 writes on refresh (the
 second of PRD002's two distinct timestamps; "last assessed" lives
