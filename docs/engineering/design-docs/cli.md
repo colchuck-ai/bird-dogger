@@ -1140,6 +1140,8 @@ consumer still references it. The error names the blocking
 references and the verbs that would clear them. Cascade would
 let one verb silently destroy chains of declarations and
 per-item history; failing fast keeps the bird-dogger in control.
+See [ADR007](../adrs/ADR007-no-cascade-removal.md) for the full
+decision and rationale.
 
 **Two clearing shapes: `none` for typed references, `--clear-<field>`
 for free-text.** `bdog item set <item> --chain none` and
