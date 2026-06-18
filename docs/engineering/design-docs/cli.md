@@ -522,7 +522,8 @@ bdog item list
     --sort    urgency|due|freshness|slip-age    default: urgency
 
 bdog item set <item>
-    --title              <text>
+    --title              <text>            manual items only; source-derived items are rejected
+                                           (title changes belong at the source, not locally)
     --trajectory         due-date|pace|none
     --due                <date>
     --pace               <text>            freeform, for pace-style trajectories
