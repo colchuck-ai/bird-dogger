@@ -508,6 +508,15 @@ source-availability state per hunt-refresh, and the set-level
 last-refresh marker. Keyed by `(hunt, item)` or `(hunt, source)`
 pairs; items are referenced by C007's internal id. SQLite-backed.
 
+**Coverage scope rule.** For each hunt, the active set is the union
+of all items returned by the hunt's selectors on last refresh and
+manually captured items assigned to that hunt. Scope is adjusted by
+editing selectors (`selector`, `hunt selector` verbs) or
+adding/removing manual items (`item add`, `item remove`). There is
+no per-item accept/reject for source-backed items; when an item stops
+matching a hunt's selectors, it leaves the active set on the next
+refresh with no separate drop-off surface.
+
 The per-item / per-hunt seam: C007 holds facts about items
 regardless of hunt; C016 holds answers to "what does this hunt
 currently include and last refreshed when."
