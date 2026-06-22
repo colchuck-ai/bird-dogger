@@ -165,8 +165,7 @@ flow to C003, never to C002.
 - **C003**: writes new tokens during source credential setup.
 - **C004, C006, C014, C017**: writes registrations and edits.
 - **C007, C016**: writes manual item captures, expected
-  trajectories, inter-item dependencies, accepted candidates, and
-  dropped-item carry-forward decisions.
+  trajectories, and inter-item dependencies.
 - **C008, C009, C010, C011, C012, C013**: dispatches chase
   actions.
 - **C015**: hands results off for rendering.
@@ -287,9 +286,8 @@ Validates that referenced selectors exist in C017.
 
 Owns per-item facts: stable internal id of shape `bdogitem-<n>`
 per [ADR006](adrs/ADR006-native-id-scheme.md) (distinct from
-source ids), origin tag (manual vs. source-derived), migration
-links across moved source records, recorded expected trajectories,
-and inter-item dependencies. Also holds the per-item assessment
+source ids), origin tag (manual vs. source-derived), recorded
+expected trajectories, and inter-item dependencies. Also holds the per-item assessment
 readings and basis traces C009 writes back, and the per-item
 underlying-data-change timestamp C008 writes on refresh (the
 second of PRD002's two distinct timestamps; "last assessed" lives
@@ -302,8 +300,8 @@ C014, C016) keys into items by C007's internal id. SQLite-backed.
 - **C001**: written by chase verbs that record per-item facts
   (manual item capture, expected-trajectory recording, inter-item
   dependency recording).
-- **C008**: writes new items, migration links, and starting
-  expected trajectories from source-side due dates.
+- **C008**: writes new items and starting expected trajectories
+  from source-side due dates.
 - **C009**: read for assessment; written with assessment readings
   and basis traces.
 - **C010, C012, C013, C014, C016**: hold their own per-item or
@@ -315,18 +313,15 @@ C014, C016) keys into items by C007's internal id. SQLite-backed.
 
 For a target hunt, walks each referenced selector via C017,
 resolves it to a `(source, selector-type, value)` triple, pulls
-items via C005, writes new items and migration links to C007,
-writes the per-item underlying-data-change timestamp to C007, and
-writes per-hunt coverage state (active set, drop-offs, candidate
-items and candidate sources, source-availability, set-level
+items via C005, writes new items to C007, writes the per-item
+underlying-data-change timestamp to C007, and writes per-hunt
+coverage state (active set, source-availability, set-level
 refresh marker) to C016. Adopts source-side due dates as starting
-expected trajectories on C007. Surfaces coverage candidates —
-sources referenced from watched data, and items in watched
-sources excluded from the active set. The multi-source picking
-rule for the underlying-data-change timestamp (max-of, per-source
-array, composite) is ADR territory per PRD002; C008 holds the
-write site once the rule lands. Triggered on-demand by `bdog
-hunt bugel`; `bdog hunt bugel --no-refresh` skips this stage and
+expected trajectories on C007. The multi-source picking rule for
+the underlying-data-change timestamp (max-of, per-source array,
+composite) is ADR territory per PRD002; C008 holds the write site
+once the rule lands. Triggered on-demand by `bdog hunt bugel`;
+`bdog hunt bugel --no-refresh` skips this stage and
 re-synthesizes against current State without invoking C008.
 
 #### Relationships
@@ -334,12 +329,10 @@ re-synthesizes against current State without invoking C008.
 - **C005**: reads items and availability.
 - **C006**: receives the target hunt and its selector references.
 - **C017**: resolves selector references to executable triples.
-- **C007**: writes new items, migration links, starting expected
-  trajectories, and the per-item underlying-data-change
-  timestamp.
-- **C016**: writes per-hunt active set, drop-offs, candidate
-  items, candidate sources, source-availability, and the
-  set-level refresh marker.
+- **C007**: writes new items, starting expected trajectories, and
+  the per-item underlying-data-change timestamp.
+- **C016**: writes per-hunt active set, source-availability, and
+  the set-level refresh marker.
 - **C009**: invokes re-assessment on items whose underlying data
   has changed since their last assessment.
 
@@ -511,22 +504,18 @@ synthesis). Writes only to stdout/stderr; holds no state.
 ### C016 - Coverage Memory
 
 Owns per-hunt coverage state: active set membership per hunt,
-drop-off history per hunt, rejected candidate items and candidate
-sources per hunt, source-availability state per hunt-refresh, and
-the set-level last-refresh marker. Keyed by `(hunt, item)` or
-`(hunt, source)` pairs; items are referenced by C007's internal
-id. SQLite-backed.
+source-availability state per hunt-refresh, and the set-level
+last-refresh marker. Keyed by `(hunt, item)` or `(hunt, source)`
+pairs; items are referenced by C007's internal id. SQLite-backed.
 
 The per-item / per-hunt seam: C007 holds facts about items
 regardless of hunt; C016 holds answers to "what does this hunt
-currently include, used to include, decided not to include, and
-last refreshed when."
+currently include and last refreshed when."
 
 #### Relationships
 
 - **C001**: written by chase verbs that change coverage state
-  (manual item capture, coverage-candidate accept/reject,
-  dropped-item carry-forward).
+  (manual item capture).
 - **C007**: references items by internal id.
 - **C008**: written on every refresh.
 - **C009**: read at assessment time (active set scopes
@@ -573,9 +562,6 @@ components that satisfy each requirement.
 - **J001-O002-R001** — Coverage Set Visibility: C016, C007, C004,
   C017, C006
 - **J001-O002-R002** — Manual Item Capture: C007, C016
-- **J001-O002-R003** — Coverage Gap Discovery: C008, C016, C007
-- **J001-O002-R004** — Drop-Off Surfacing: C008, C016
-- **J001-O002-R005** — Item Migration Linking: C008, C007, C016
 - **J001-O002-R006** — Active Set Freshness: C008, C016
 - **J001-O002-R007** — Source Registration: C004, C005, C003, C002
 - **J001-O003-R001** — Status Basis: C009, C007
