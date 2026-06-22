@@ -22,11 +22,10 @@ The Connection band has to answer two distinct questions:
 The product README's `J001-O001-R007` and `J001-O002-R007` (Source
 Registration) treat source registration as its own capability,
 separate from the hunt-scope work. Conversely, `J001-O002-R001`
-(Coverage Set Visibility), `J001-O002-R003` (Coverage Gap Discovery),
-`J001-O002-R005` (Item Migration Linking), and `J001-O002-R006`
-(Active Set Freshness) describe set-level coverage operations that
-take the `(source, selector)` set as input but do not care how the
-connection was authenticated.
+(Coverage Set Visibility) and `J001-O002-R006` (Active Set Freshness)
+describe set-level coverage operations that take the `(source,
+selector)` set as input but do not care how the connection was
+authenticated.
 
 Without a recorded decision here, the architecture could collapse
 both axes into a single "watch" abstraction and force every coverage
@@ -97,9 +96,7 @@ scope and asks `C005` per source.
   source.
 - Item identity (`C007`) is source-scoped, not hunt-scoped: the same
   Jira issue surfaced in two hunts is one item under `C007` and two
-  membership rows under `C016`. Item Migration Linking
-  (`J001-O002-R005`) therefore applies once regardless of how many
-  hunts the item participates in.
+  membership rows under `C016`.
 - The bird-dogger has to learn the source/hunt distinction during
   onboarding. CLI help text and any setup-wizard work must make the
   two-verb flow obvious; the alternative is a `watch` mental model

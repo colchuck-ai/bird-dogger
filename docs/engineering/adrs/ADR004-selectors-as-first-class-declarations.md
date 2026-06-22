@@ -80,7 +80,9 @@ and ambiguous propagation semantics.
 ADR001's two-axis decoupling (auth ⟂ scope) stands. This ADR refines
 the scope axis: scope is composed of named selectors, and the bird-
 dogger declares each selector once. Hunts compose selectors by
-reference, not by inclusion.
+reference, not by inclusion. Adjusting a hunt's coverage set means
+editing selectors or adding/removing hunt selector references — there
+is no per-item accept or reject for source-backed items.
 
 The promotion also gives `selector test` a home. Under the inline
 form, testing a query meant either declaring a throwaway hunt or
@@ -125,9 +127,7 @@ maintains.
   different sources.
 - Identity at the item layer is unaffected: `C007` items are still
   source-scoped, not selector-scoped. The same Jira issue surfaced
-  via two selectors in the same hunt is one item; selector
-  attribution is a `C016` Coverage Memory concern when needed for
-  per-source provenance.
+  via two selectors in the same hunt is one item.
 - Composes with
   [PRD003](../../product/pdrs/PRD003-shared-source-registration.md):
   PRD003 shares the auth axis at the component layer; ADR004 shares
