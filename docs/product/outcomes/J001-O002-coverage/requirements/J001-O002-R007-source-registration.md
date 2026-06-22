@@ -59,5 +59,3 @@ watched-sources view).
 - J001-O001-R007 — identical capability under the slip-detection
   outcome; one implementation serves both.
 - J001-O002-R006 — registered sources enter the refresh cycle.
-- J001-O002-R003 — gap discovery is the primary feeder of
-  registration requests beyond manual entry.

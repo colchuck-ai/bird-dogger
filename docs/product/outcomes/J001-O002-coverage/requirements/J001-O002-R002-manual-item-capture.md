@@ -22,10 +22,10 @@ external source ever backs it.
 - Same item captured twice manually: deduplicated by the
   bird-dogger's choice, not silently collapsed; the second
   capture surfaces the existing entry.
-- Manual item later appears in a watched source: surfaced as a
-  candidate link to R005 (Item Migration Linking) so the active
-  set can follow the live record rather than ending up with two
-  entries.
+- Manual item later appears in a watched source: no automatic
+  linking occurs; the bird-dogger must decide manually whether
+  to retain the manual entry, remove it, or replace it with
+  the source-backed record.
 - Manual item with no owner recorded: still captured; downstream
   outcomes (e.g., O005 escalation target) flag the missing
   owner rather than block capture.
@@ -54,8 +54,5 @@ external source ever backs it.
 
 ## Dependencies
 
-- J001-O002-R005 — when a manual item later appears in a watched
-  source, migration linking decides how the two records are
-  reconciled.
 - J001-O001-R003 — manual items still need an expected
   trajectory to be assessable for slip.
