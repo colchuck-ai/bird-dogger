@@ -3,6 +3,14 @@
 Minimize the likelihood that an open item is forgotten between
 checkpoints.
 
+## Coverage Scope
+
+Coverage applies to items actively present in registered watched
+sources at refresh time. Items that leave watched sources, are
+archived by trackers, or migrate to unregistered sources exit the
+active set by design; recovering them requires manual capture (R002)
+or re-registration of the new source (R007).
+
 ## Risks
 
 - **J001-O002-RSK001** - Implicit Commitment: A commitment is made in
@@ -30,6 +38,23 @@ checkpoints.
   checkpoint's list, increasing the likelihood that the item is
   forgotten between checkpoints.
 
+## Accepted Risks
+
+- **J001-O002-RSK002** (partial): Automated gap discovery — candidate
+  sources and items outside the registered set are not surfaced
+  automatically. The bird-dogger must identify and register new sources
+  manually (R007). RSK002 is partially mitigated: visibility (R001) and
+  registration (R007) are addressed; proactive gap discovery is out of
+  scope.
+- **J001-O002-RSK003**: List drop-off is accepted per the coverage scope
+  rule. Items that leave watched sources are not tracked back; the
+  active set reflects current contents of registered sources only. The
+  bird-dogger can re-add dropped items manually (R002).
+- **J001-O002-RSK004**: Item migration loss is accepted per the coverage
+  scope rule. When an item moves to an unregistered source, it exits the
+  active set; the bird-dogger must register the new source (R007) or
+  recapture the item manually (R002).
+
 ## Requirements
 
 - **J001-O002-R001** - Coverage Set Visibility: The product must show
@@ -38,19 +63,6 @@ checkpoints.
 - **J001-O002-R002** - Manual Item Capture: The product must let the
   bird-dogger add an item to the active set without requiring it to
   exist in any watched source.
-- **J001-O002-R003** - Coverage Gap Discovery: The product must
-  surface candidate sources — sources referenced by watched items or
-  otherwise reachable from watched data but not themselves watched —
-  and candidate items — items present in watched sources but excluded
-  from the active set — so the bird-dogger can decide whether to add
-  them.
-- **J001-O002-R004** - Drop-Off Surfacing: The product must surface
-  items that have left the active set since the last checkpoint and
-  let the bird-dogger keep them in coverage.
-- **J001-O002-R005** - Item Migration Linking: The product must
-  follow an item when it moves between sources, projects, or
-  trackers, so the active set tracks the live item rather than its
-  original record.
 - **J001-O002-R006** - Active Set Freshness: The product must refresh
   the active set from watched sources before each checkpoint and
   show when the last refresh occurred.
@@ -60,7 +72,7 @@ checkpoints.
 ## Risk-Requirement Map
 
 - **J001-O002-RSK001**: J001-O002-R002
-- **J001-O002-RSK002**: J001-O002-R001, J001-O002-R003, J001-O002-R007
-- **J001-O002-RSK003**: J001-O002-R004
-- **J001-O002-RSK004**: J001-O002-R005
+- **J001-O002-RSK002**: J001-O002-R001, J001-O002-R007
+- **J001-O002-RSK003**: *(accepted — see Accepted Risks)*
+- **J001-O002-RSK004**: *(accepted — see Accepted Risks)*
 - **J001-O002-RSK005**: J001-O002-R006
