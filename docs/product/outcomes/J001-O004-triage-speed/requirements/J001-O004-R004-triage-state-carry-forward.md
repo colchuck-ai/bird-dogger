@@ -40,9 +40,6 @@ cycle.
   no new underlying data, recommendation unchanged): the item
   resurfaces with its prior decision and an explicit "no
   change" signal, not silently held off the triage list.
-- Item dropped from coverage between checkpoints (per
-  O002-R004): the prior triage decision is retained and
-  surfaces alongside the drop-off, not erased on the way out.
 - Prior triage decision is stale (a "watching" decision across
   multiple checkpoints with no review): the staleness surfaces
   explicitly per

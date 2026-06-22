@@ -25,8 +25,6 @@ Concrete instances already in the requirement layer:
   than letting silence read as on-track.
 - **O002-R001** shows an empty watched-sources view explicitly as
   empty, not absent.
-- **O002-R004** surfaces drop-offs as a distinct set rather than
-  silently letting items leave coverage.
 - **O002-R006** flags unreachable sources at refresh time and
   retains their prior items as stale rather than silently dropping
   them.
