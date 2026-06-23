@@ -1,4 +1,4 @@
-# C001 - CLI
+# CLI (C001)
 
 Parses the `bdog` command surface, validates arguments, resolves names and ids, dispatches to State and Reasoning components, and hands results to C015 for rendering. Owns the binary entry point. Every bird-dogger action is a composable, scriptable subcommand; there is no daemon and no background process.
 
@@ -8,7 +8,7 @@ Parses the `bdog` command surface, validates arguments, resolves names and ids, 
 
 **Native ids.** Every auto-assigned entity uses `bdog<kind>-<n>`: `<kind>` is the entity name, `<n>` is a monotonically increasing integer scoped per kind. Examples: `bdogitem-123`, `bdognote-7`, `bdogtouch-87`. Declarative entities (`source`, `selector`, `hunt`, `contact`, `chain`) also carry stable internal ids assigned on `add`, in addition to bird-dogger-chosen names.
 
-**Storage keys on ids; CLI speaks names.** Cross-entity references in the TOML config (C002) and SQLite stores key on id, not name. The CLI resolves `<name>` to id at command time. Renames via `--rename` rewrite the name field only; references stay pointed at the same id.
+**Storage keys on ids; CLI speaks names.** Cross-entity references in the TOML config (C002) and SQLite stores key on id, not name. The CLI resolves `<name>` to id at command time. Renames via `--rename` rewrite the name field only; references stay pointed at the same id. `bdog <noun> info` and `bdog <noun> list` surface the id alongside the name so hand-editing the TOML can match either form. Reusing a freshly-vacated name for a new entity is safe — old references continue to point at the renamed predecessor's id, not at the new entity.
 
 **Item identity.** Every item gets a `bdogitem-<n>` on first capture (manual) or first refresh (source-derived). Source-derived items retain their source id (e.g. `SUPPLY-1234`) as an alias. Commands accepting `<item>` accept either form:
 - Native id — always unambiguous.
@@ -131,6 +131,8 @@ bdog contact set <name>
 
 `remove` fails when referenced by any chain or as any item owner.
 
+`--about` is a stable freetext description of the contact — distinct from `bdog note` records (item-scoped, auto-capture a context snapshot at write time), `bdog override --reason` (per-write justification for a judgment correction), and `bdog touch --message` (content of a contact event). Channel-handle flags and `--about` are free text; clearing uses `--clear-<field>`. `--clear-*` flags and their value-bearing siblings are mutually exclusive in one invocation (e.g., `--email foo@bar --clear-email` errors).
+
 ### chain
 
 Named, reusable escalation contact list. Members ordered by position (1-indexed, contiguous). Position 1 is primary.
@@ -157,7 +159,7 @@ bdog chain member set <chain> <contact>
     --position  <n>
 ```
 
-`add` errors if contact already a member; `set` errors if not a member. Contact must exist in C014 first.
+`add` inserts at the given position and shifts higher-numbered members down; omitting `--position` appends. `remove` closes the gap automatically. `set --position` moves a member and shifts others to maintain a contiguous list. `add` errors if the contact is already a member; `set` errors if not. Contact must exist in C014 first.
 
 ### hunt
 
@@ -220,7 +222,13 @@ bdog item set <item>
     --clear-pace
 
 bdog item confirm-owner <item>
+
+bdog item accept        <item> --hunt <hunt>
+bdog item reject        <item> --hunt <hunt>
+bdog item carry-forward <item> --hunt <hunt>
 ```
+
+`confirm-owner` records the owner-confirmation timestamp; each invocation advances it (not idempotent by design). Coverage actions operate on items in candidate or drop-off state per hunt: `accept` moves a candidate into the active set, `reject` marks it excluded, `carry-forward` keeps a drop-off in the active set. Re-issuing any coverage verb when the item is already in the target state errors with `already <state>`.
 
 Trajectory cross-validation: `due-date` requires `--due`; `pace` requires `--pace`; `none` clears both. Conflicting trajectory and field combinations error with resolution hint.
 
@@ -295,7 +303,7 @@ bdog note set <id>
 
 ### Output contract
 
-List-level and detail output shapes are specified in [C015 - Renderer](C015-renderer.md). C001 invokes C015 after dispatch; it does not format tabular output itself.
+List-level and detail output shapes are specified in [Renderer (C015)](C015-renderer.md). C001 invokes C015 after dispatch; it does not format tabular output itself.
 
 ## Behavior
 
@@ -329,6 +337,7 @@ List-level and detail output shapes are specified in [C015 - Renderer](C015-rend
 | `touch record-response` | Idempotent on identical input; overwrites on different input |
 | `hunt activate/deactivate` | Idempotent |
 | `item confirm-owner` | Not idempotent; advances timestamp each invocation |
+| `item accept/reject/carry-forward` | Not idempotent across state transitions; errors with `already <state>` when item is already in the target state |
 
 **Bugel as sole refresh path.** `hunt bugel` sequences refresh → re-assess → synthesize → render. No standalone refresh command. `--no-refresh` skips the pull; `--dry-run` previews without writing.
 
@@ -364,9 +373,29 @@ List-level and detail output shapes are specified in [C015 - Renderer](C015-rend
 
 ## Notes
 
-Design rationale for noun choices (selectors top-level, contacts top-level, hunt-selector as set not list, manual items without source reference, active/inactive hunts, bugel naming) is captured in ADR001, ADR002, ADR003, ADR004, ADR005 and product PDRs referenced from the architecture document.
-
 Supersedes the placeholder verb list previously in the engineering root README.
+
+### Design decisions
+
+**Noun-first sub-verb pattern.** Every managed entity follows `bdog <noun> <sub-verb>`. Top-level nouns expose the full `add|remove|info|list|set` set; stateless sub-resources (`hunt selector`, `item depends-on`) expose `add|remove|list` only. Learning one noun transfers to all others; tab completion surfaces a consistent shape across the entire binary.
+
+**Storage keys on stable ids; the CLI speaks names.** Every declared entity carries a `bdog<kind>-<n>` id alongside its bird-dogger-chosen name. Cross-entity references in the TOML config and SQLite stores key on the id, not the name. Renames are therefore local — there is no propagation step and no risk of a half-updated reference. See ADR006 for the native-id scheme and source-id alias design.
+
+**Selectors are top-level, not hunt-owned.** A selector's definition (source, query, type) is independent of which hunts use it. Per ADR004, lifting selectors to a first-class noun lets the same query appear in multiple hunts and lets changes propagate without per-hunt edits.
+
+**Contacts are top-level; chains reference contacts.** A contact is the person; a chain is a named ordered list of contacts; an item references one contact for ownership and optionally one chain for escalation. Lifting contacts out of chains lets the same person appear in multiple chains and as multiple items' owner without re-declaration; channel handles, freshness, and disagreement state live with the contact.
+
+**`hunt selector` exposes only `add|remove|list`.** The sub-resource records only membership — there is nothing to `set` or inspect via `info` that does not already live on the `selector` noun. The asymmetry with `chain member` is intentional: `chain member` carries its own state (position) and its order is bird-dogger-visible; `hunt selector` is an unordered set, and the refresh engine walks all referenced selectors per bugel without bird-dogger-controlled ordering.
+
+**Manual items carry no source reference.** `item add` accepts no URL or source identifier. A manual item is a purely local record. Tracking a specific remote item that falls outside existing selectors is done by creating a targeted selector — this keeps item identity clean and avoids a hybrid manual-plus-remote category.
+
+**No-cascade removal.** Removing a declarative entity (`source`, `selector`, `contact`, `chain`, `hunt`) or manual item is rejected when any consumer still references it. The error names the blocking references and the verbs that would clear them. Cascade would let one verb silently destroy chains of declarations and per-item history; failing fast keeps the bird-dogger in control. See ADR007.
+
+**`override remove` deactivates; `touch remove` and `note remove` hard-delete.** Overrides are deactivated on remove — history is preserved per PRD004. Touches and notes are hard-deleted — they correct a recording mistake and carry no equivalent history obligation. See ADR008.
+
+**Active/inactive hunts.** Hunts carry an active flag; default-arg `hunt bugel` operates on active hunts only. Inactive hunts preserve their declaration and history without running each cadence; explicit naming still operates on them. End-of-quarter cleanup deactivates rather than removes.
+
+**`bugel` is the only refresh path.** The bugel sequences refresh → re-assess → synthesize → render in one command, matching the product's recurring-checkpoint framing. There is no standalone `bdog hunt refresh` — partial work is covered by `--no-refresh` (skip pull, re-synthesize current State) and `--dry-run` (preview without writing). Per ADR002, all refresh/assessment/synthesis runs inside a single CLI invocation; no background process. "Bugel" is a colloquialism for the checkpoint concept — product docs use the formal "checkpoint." The two terms refer to the same thing.
 
 ### Common workflows
 
@@ -512,6 +541,26 @@ bdog hunt selector add infra-q3 supply-p0
 # broaden scope; propagates to both hunts on next bugel
 bdog selector set supply-p0 \
     --selector "project in (SUPPLY, INFRA) AND priority = P0 AND status != Done"
+```
+
+#### Accepting a coverage candidate
+
+```sh
+# the bugel surfaced bdogitem-981 as a candidate (in a watched
+# source, not yet in the active set for this hunt)
+bdog item accept bdogitem-981 --hunt supply-q3
+
+# or, mark it as deliberately out of coverage for this hunt
+bdog item reject bdogitem-981 --hunt supply-q3
+```
+
+#### Carrying a drop-off forward
+
+```sh
+# the bugel surfaced bdogitem-714 as a drop-off (left the active
+# set since last refresh, e.g., closed at source but bird-dogger
+# knows the chase isn't done)
+bdog item carry-forward bdogitem-714 --hunt supply-q3
 ```
 
 #### Deactivating a hunt at end of quarter
