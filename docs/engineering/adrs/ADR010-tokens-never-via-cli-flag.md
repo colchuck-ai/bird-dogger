@@ -6,13 +6,12 @@ valid input mechanisms are an interactive terminal prompt (for
 `BDOG_SOURCE_<NAME>_TOKEN` environment-variable fallback for headless
 environments. Flag shapes that carry a secret as an argument — `--token`,
 `--clear-token`, or any equivalent — are architecturally foreclosed.
-This constraint applies at C003 Credential Store and C005 Source
-Adapter, not just at the CLI verb surface.
+This constraint applies at Credential Store (C003) and Source Adapter (C005), not just at the CLI verb surface.
 
 ## Context
 
 `source add` and `source rotate-token` are the two CLI paths that write
-source credentials into C003's keyring store. Both need an input
+source credentials into Credential Store (C003)'s keyring store. Both need an input
 mechanism for the secret string. The question is which mechanisms are
 acceptable.
 
@@ -101,12 +100,7 @@ without a valid credential is not a partial success state worth
 preserving. Removing a source's credential is inseparable from removing
 the source declaration that binds to it.
 
-This constraint is architectural, not just CLI style. It governs C003
-Credential Store — which must never accept a token string delivered from
-a flag value — and C005 Source Adapter — which receives credentials
-exclusively from C003, not from any CLI-layer input. A future verb or
-flag that carried a secret as an argument would violate C003's write-path
-contract regardless of how the verb was named.
+This constraint is architectural, not just CLI style. It governs Credential Store (C003) — which must never accept a token string delivered from a flag value — and Source Adapter (C005) — which receives credentials exclusively from Credential Store (C003), not from any CLI-layer input. A future verb or flag that carried a secret as an argument would violate Credential Store (C003)'s write-path contract regardless of how the verb was named.
 
 ## Consequences
 
@@ -123,14 +117,8 @@ contract regardless of how the verb was named.
   no-cascade-removal rule (see
   [ADR007](ADR007-no-cascade-removal.md)) ensures that a source with
   active consumers cannot be silently removed.
-- C003 Credential Store's write paths are `source add` (new token) and
-  `source rotate-token` (replacement). Both originate from interactive
-  prompt or env-var reads. No CLI-layer code delivers a token string to
-  C003 from a flag value.
-- C005 Source Adapter receives credentials exclusively from C003 at
-  request time. C005 has no token-accept interface of its own; an
-  adapter implementation that accepted a token directly would violate
-  this constraint.
+- Credential Store (C003)'s write paths are `source add` (new token) and `source rotate-token` (replacement). Both originate from interactive prompt or env-var reads. No CLI-layer code delivers a token string to Credential Store (C003) from a flag value.
+- Source Adapter (C005) receives credentials exclusively from Credential Store (C003) at request time. Source Adapter (C005) has no token-accept interface of its own; an adapter implementation that accepted a token directly would violate this constraint.
 - The `BDOG_SOURCE_<NAME>_TOKEN` naming scheme is load-bearing:
   `<NAME>` is the source name uppercased with `-` replaced by `_`.
   CLI help text for `source add` and `source rotate-token` must describe
@@ -138,8 +126,7 @@ contract regardless of how the verb was named.
 - Future source types that carry credentials follow the same model:
   interactive prompt on `source add` and `source rotate-token`, env-var
   fallback. Tokenless types (e.g., `local-json` per
-  [ADR005](ADR005-local-json-source-type.md)) skip both paths; C003 is
-  not asked.
+  [ADR005](ADR005-local-json-source-type.md)) skip both paths; Credential Store (C003) is not asked.
 - Composes with
   [ADR009](ADR009-side-effecting-actions-on-dedicated-verbs.md):
   credential operations (`source add`, `source rotate-token`) are

@@ -22,7 +22,7 @@ entity graph — records that capture intent or events at a point in time:
   specific contact was reached, when, and what was communicated. A touch
   is an append-only record of something that happened.
 
-- **Notes** (`bdog note add`) produce a first-class C012 triage record
+- **Notes** (`bdog note add`) produce a first-class Note Store (C012) triage record
   with an auto-captured context snapshot. Notes are the bird-dogger's
   structured commentary on an item at a moment in time.
 
