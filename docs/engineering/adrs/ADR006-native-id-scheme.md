@@ -17,7 +17,7 @@ The bird-dogger edits the TOML config by hand in addition to using CLI
 verbs; cross-entity references inside the TOML must key on something
 that doesn't change when the bird-dogger renames a source, selector,
 or hunt. Items, notes, and touches accumulate as SQLite state; the
-State band (C007, C010, C012, C013, C016) must reference items without
+State band (**Item Store (C007)**, **Override Store (C010)**, **Note Store (C012)**, **Touch Log (C013)**, **Coverage Memory (C016)**) must reference items without
 ambiguity across sources.
 
 Two identity pressures meet here. Declarative entities (sources,
@@ -117,14 +117,14 @@ and ties item identity to source health rather than to the local store.
 - Integers are not meaningful across kinds: `bdogitem-7` and
   `bdognote-7` are unrelated entities; the kind prefix is the only
   type disambiguator.
-- `C007` (Item Store) is the identity hub for the State band. Every
-  other State-band store — C010, C012, C013, C014, C016 — keys into
-  items by `C007`'s `bdogitem-<n>`. An item that appears in two hunts
-  via the same source is one `bdogitem-<n>` in C007 and two membership
-  rows in C016. See
+- **Item Store (C007)** is the identity hub for the State band. Every
+  other State-band store — **Override Store (C010)**, **Note Store (C012)**, **Touch Log (C013)**, **Contact Registry (C014)**, **Coverage Memory (C016)** — keys into
+  items by **Item Store (C007)**'s `bdogitem-<n>`. An item that appears in two hunts
+  via the same source is one `bdogitem-<n>` in **Item Store (C007)** and two membership
+  rows in **Coverage Memory (C016)**. See
   [engineering README](../README.md) and
   [ADR001](ADR001-source-hunt-decoupling.md).
-- `C002` (Config Store) owns the per-kind integer counters for
+- **Config Store (C002)** owns the per-kind integer counters for
   declarative entities and is responsible for the assignment and
   write-back behavior on hand-added TOML entities. See
   [engineering README](../README.md).
