@@ -152,6 +152,4 @@ editor. The id field is the boundary between the two paths:
 - **Cross-references use the id form:** name-or-id resolution is a
   CLI-argument convenience only; on-disk TOML cross-references must
   use the native id. `bdog <noun> info` and `bdog <noun> list` surface
-  ids for this purpose. Full rules live in the
-  [CLI design doc](../design-docs/cli.md) under
-  `### Hand-edit reconciliation`.
+  ids for this purpose. Full rules live in [CLI (C001)](../components/C001-cli.md#behavior) "Hand-edit reconciliation."

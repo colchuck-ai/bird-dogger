@@ -118,6 +118,5 @@ exclusive on the same call: `--email foo --clear-email` is an error.
   source declaration (`source remove`). ADR010 forecloses the flag
   shape entirely; this ADR does not create an exception for credential
   fields.
-- See [cli.md](../design-docs/cli.md) §"Clearing a field" (near the
-  top of the Patterns section) and the `contact set` and `item set`
+- See [CLI (C001)](../components/C001-cli.md#command-pattern) §"Field clearing" and the `contact set` and `item set`
   verb definitions for the canonical examples.

@@ -102,6 +102,6 @@ removed (via `item remove`) before the owning hunt can be removed.
   requires several commands. This cost is accepted because the
   alternative — bulk silent deletion — is unrecoverable.
 
-- See [cli.md](../design-docs/cli.md) "Removal semantics" and the
-  `### Tearing down a source (no-cascade)` example for the full
+- See [CLI (C001)](../components/C001-cli.md#behavior) "Removal semantics" and the
+  [`Tearing down a source (no-cascade)`](../components/C001-cli.md#tearing-down-a-source-no-cascade) example for the full
   per-noun verb table and a worked teardown walkthrough.

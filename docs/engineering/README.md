@@ -1,6 +1,6 @@
 # Birddog
 
-Birddog is a single Go binary (`bdog`) that runs the bird-dogging chase loop on the bird-dogger's local machine. It reads from authenticated external sources (Jira via `jira-cloud` and `jira-dc` source types; `local-json` files as a third first-class type), assesses items pulled into a hunt's coverage, and renders the resulting list at each on-demand checkpoint via `bdog hunt bugel` — `bugel` is the CLI's chase-metaphor name for the product's checkpoint moment; the [CLI design doc](design-docs/cli.md) carries the full rationale. All persistent runtime state — items, assessments, overrides, notes, the touch log — lives in one local SQLite database; declared sources, selectors, hunts, contacts, and chains live in one TOML config file; source secrets live in the OS keyring. The bird-dogger drives every state change through CLI subcommands; no daemon, no network listener, no server.
+Birddog is a single Go binary (`bdog`) that runs the bird-dogging chase loop on the bird-dogger's local machine. It reads from authenticated external sources (Jira via `jira-cloud` and `jira-dc` source types; `local-json` files as a third first-class type), assesses items pulled into a hunt's coverage, and renders the resulting list at each on-demand checkpoint via `bdog hunt bugel` — `bugel` is the CLI's chase-metaphor name for the product's checkpoint moment; [CLI (C001)](components/C001-cli.md) carries the full rationale. All persistent runtime state — items, assessments, overrides, notes, the touch log — lives in one local SQLite database; declared sources, selectors, hunts, contacts, and chains live in one TOML config file; source secrets live in the OS keyring. The bird-dogger drives every state change through CLI subcommands; no daemon, no network listener, no server.
 
 The architecture splits into four bands:
 
@@ -44,7 +44,7 @@ Reasoning reads from Connection and State, writes State, and hands results to th
 
 ### C001 - CLI
 
-Parses subcommands and arguments, dispatches to the relevant State or Reasoning component, and pipes results to the Renderer. Owns the `bdog` binary entry point; the [CLI design doc](design-docs/cli.md) is the sole owner of the full verb surface. Configuration nouns — source, selector, hunt, contact, chain — each support declaration and lifecycle management; chase nouns — item, override, touch, note — support per-item state management. The bugel subcommand sequences refresh → re-assess → synthesize → render for one or more hunts and is the only refresh path; a no-refresh variant re-synthesizes against current State without pulling sources. Tokens entered through the CLI flow to C003, never to C002.
+Parses subcommands and arguments, dispatches to the relevant State or Reasoning component, and pipes results to the Renderer. Owns the `bdog` binary entry point; [CLI (C001)](components/C001-cli.md) is the sole owner of the full verb surface. Configuration nouns — source, selector, hunt, contact, chain — each support declaration and lifecycle management; chase nouns — item, override, touch, note — support per-item state management. The bugel subcommand sequences refresh → re-assess → synthesize → render for one or more hunts and is the only refresh path; a no-refresh variant re-synthesizes against current State without pulling sources. Tokens entered through the CLI flow to C003, never to C002.
 
 #### Relationships
 
@@ -59,7 +59,7 @@ Parses subcommands and arguments, dispatches to the relevant State or Reasoning 
 
 Reads and writes the single TOML configuration file. Holds declarations as sibling tables: sources (`type`, `url` or `path`, non-secret auth fields, secret reference where applicable), selectors (`source`, `selector-type`, `value`), hunts (selector references, active flag), contacts (`name`, channel handles), and chains (ordered contact references). Re-read fresh on every CLI invocation. Holds no secrets.
 
-Each declared entity carries a stable internal `id` field alongside its bird-dogger-chosen name, of shape `bdog<kind>-<n>` where `<kind>` is one of `source`, `selector`, `hunt`, `contact`, or `chain` and `<n>` is a monotonically increasing integer scoped per kind. Cross-entity references inside the TOML key on the id, not the name — a hunt's selector list, a chain's contact members, and an item's chain or owner reference all carry ids. This keeps `--rename` local: a name change rewrites the entity's name field without touching any reference. The CLI is the canonical id assigner; the [CLI design doc](design-docs/cli.md) covers the hand-edit reconciliation rule for new entities a bird-dogger adds by editing the TOML directly.
+Each declared entity carries a stable internal `id` field alongside its bird-dogger-chosen name, of shape `bdog<kind>-<n>` where `<kind>` is one of `source`, `selector`, `hunt`, `contact`, or `chain` and `<n>` is a monotonically increasing integer scoped per kind. Cross-entity references inside the TOML key on the id, not the name — a hunt's selector list, a chain's contact members, and an item's chain or owner reference all carry ids. This keeps `--rename` local: a name change rewrites the entity's name field without touching any reference. The CLI is the canonical id assigner; [CLI (C001)](components/C001-cli.md#behavior) covers the hand-edit reconciliation rule for new entities a bird-dogger adds by editing the TOML directly.
 
 #### Relationships
 
@@ -204,7 +204,7 @@ Living in the State band — despite the contact/chain declarations being declar
 
 ### C015 - Renderer
 
-Produces tabular CLI output for list-level views and item-level detail views; per-verb output shapes live in the [CLI design doc](design-docs/cli.md) under "Renderer surfaces." Carries the readability obligations from PRD001 (uncertainty / disagreement states stay readable, not buried) and PRD002 (two timestamps surfaced distinctly per item) at the rendering layer — column layout, density given table width, overflow behavior, marker glyphs. Renders the per-item signal pack C011 emits; does not pick which signals matter (that's synthesis). Writes only to stdout/stderr; holds no state.
+Produces tabular CLI output for list-level views and item-level detail views; per-verb output shapes live in [Renderer (C015)](components/C015-renderer.md#renderer-surfaces). Carries the readability obligations from PRD001 (uncertainty / disagreement states stay readable, not buried) and PRD002 (two timestamps surfaced distinctly per item) at the rendering layer — column layout, density given table width, overflow behavior, marker glyphs. Renders the per-item signal pack C011 emits; does not pick which signals matter (that's synthesis). Writes only to stdout/stderr; holds no state.
 
 #### Relationships
 

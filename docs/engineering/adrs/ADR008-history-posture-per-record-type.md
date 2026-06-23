@@ -118,6 +118,6 @@ history for this type? If yes, deactivate. If no, hard-delete.
   be hard-delete unless a product/PRD commitment to history exists for
   that type.
 
-- See [cli.md](../design-docs/cli.md) "Removal semantics" for the prose
+- See [CLI (C001)](../components/C001-cli.md#behavior) "Removal semantics" for the prose
   summary of both postures and the idempotence table for the
   type-specific behavior.
