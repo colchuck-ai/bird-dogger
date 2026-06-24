@@ -1,8 +1,10 @@
 # Credential Store (C003)
 
-Owns source-token storage and retrieval. Resolves a source's secret via the OS keyring first, then the `BDOG_SOURCE_<NAME>_TOKEN` environment-variable fallback. Stores and returns the opaque secret string only — how Source Adapter (C005) applies it (Basic, Bearer, PAT header shape, etc.) is adapter territory. Secrets never appear in Config Store (C002) or on disk in plaintext.
+Owns source-token storage and retrieval via OS keyring with `BDOG_SOURCE_<NAME>_TOKEN` env-var fallback. Returns opaque secret strings only — auth header shaping is Source Adapter (C005) territory. Never persists secrets to Config Store (C002) or disk in plaintext.
 
 ## Data model
+
+OS keyring-backed (macOS Keychain, Linux Secret Service, Windows Credential Manager); env-var fallback for headless read and write. No plaintext disk storage.
 
 **One secret slot per source name.** Credential Store (C003) keys credentials by the bird-dogger-chosen source name (the same name used in `bdog source add <name>` and Config Store (C002) declarations). There is no separate credential id; the source name is the lookup key.
 
@@ -103,21 +105,14 @@ CLI help for `source add` and `source rotate-token` documents both paths ([ADR01
 
 ## Edge cases
 
-**Tokenless type on add.** `local-json` and future types with no secret never call write or read. No empty keyring slot is created.
-
-**Keyring miss, env present.** Read succeeds from env even when keyring entry is absent — supports CI injection without persisting to keyring.
-
-**Keyring hit, env also set.** Keyring wins on read; env is fallback only.
-
-**Rotate with wrong env name.** Env-var name derives from source name, not display label. Renaming a source (`source set --rename`) updates Config Store (C002) only; the keyring entry must move with the rename (implementation detail) or the bird-dogger must rotate after rename — component doc expectation: credential key tracks current source name.
-
-**Missing secret at refresh.** Source Adapter (C005) receives a miss; availability reports auth failure; items are not silently treated as healthy ([J001-O001-R006](../../product/outcomes/J001-O001-slip-detection-lag/requirements/J001-O001-R006-source-availability.md)).
-
-**No `--clear-token`.** A source without a valid credential is not a supported partial state. Fix via `source rotate-token` or remove the source entirely.
-
-**Flag-shaped future verbs.** Any future CLI surface that accepted `--token <value>` would violate Credential Store (C003)'s write contract regardless of verb name ([ADR010](../adrs/ADR010-tokens-never-via-cli-flag.md)).
-
-**Secrets never in process argv.** Interactive and env-var paths keep secrets out of shell history and `ps` argument vectors; Credential Store (C003) write APIs must not encourage flag delivery.
+- **Tokenless type on add:** `local-json` and future types with no secret never call write or read. No empty keyring slot is created.
+- **Keyring miss, env present:** Read succeeds from env even when keyring entry is absent — supports CI injection without persisting to keyring.
+- **Keyring hit, env also set:** Keyring wins on read; env is fallback only.
+- **Rotate with wrong env name:** Env-var name derives from source name, not display label. Renaming a source (`source set --rename`) updates Config Store (C002) only; the keyring entry must move with the rename (implementation detail) or the bird-dogger must rotate after rename — component doc expectation: credential key tracks current source name.
+- **Missing secret at refresh:** Source Adapter (C005) receives a miss; availability reports auth failure; items are not silently treated as healthy ([J001-O001-R006](../../product/outcomes/J001-O001-slip-detection-lag/requirements/J001-O001-R006-source-availability.md)).
+- **No `--clear-token`:** A source without a valid credential is not a supported partial state. Fix via `source rotate-token` or remove the source entirely.
+- **Flag-shaped future verbs:** Any future CLI surface that accepted `--token <value>` would violate Credential Store (C003)'s write contract regardless of verb name ([ADR010](../adrs/ADR010-tokens-never-via-cli-flag.md)).
+- **Secrets never in process argv:** Interactive and env-var paths keep secrets out of shell history and `ps` argument vectors; Credential Store (C003) write APIs must not encourage flag delivery.
 
 ## Relationships
 
@@ -125,8 +120,7 @@ CLI help for `source add` and `source rotate-token` documents both paths ([ADR01
 - **Config Store (C002)**: holds source declarations only. No secret fields; no read/write coupling except shared source name as lookup key.
 - **Source Registry (C004)**: resolves `(declaration, secret, adapter)` bundles; secret leg comes from Credential Store (C003) on demand.
 - **Source Adapter (C005)**: sole routine reader — per-request, scoped to one source. Receives opaque secret string; owns auth method and wire format. Must not accept tokens from CLI or flags directly ([ADR010](../adrs/ADR010-tokens-never-via-cli-flag.md)).
-
-Credential Store (C003) does **not** interact with Item Store (C007), Hunt Refresh State (C016), or Renderer (C015).
+- **Item Store (C007), Hunt Refresh State (C016), Renderer (C015)**: no interaction — Credential Store (C003) does not read or write chase-state or rendering data.
 
 ## Success criteria
 
