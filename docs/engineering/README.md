@@ -124,15 +124,15 @@ Owns per-item facts: stable internal id of shape `bdogitem-<n>` per [ADR006](adr
 
 ### Refresh Engine (C008)
 
-For a target hunt, walks each referenced selector via Selector Registry (C017), resolves it to a `(source, selector-type, value)` triple, pulls items via Source Adapter (C005), writes new items to Item Store (C007), writes the per-item underlying-data-change timestamp to Item Store (C007), and writes per-hunt coverage state (active set, source-availability, set-level refresh marker) to Coverage Memory (C016). Adopts source-side due dates as starting expected trajectories on Item Store (C007). The multi-source picking rule for the underlying-data-change timestamp (max-of, per-source array, composite) is ADR territory per PRD002; Refresh Engine (C008) holds the write site once the rule lands. Triggered on-demand by `bdog hunt bugel`; `bdog hunt bugel --no-refresh` skips this stage and re-synthesizes against current State without invoking Refresh Engine (C008).
+Orchestrates selector-deduped refresh per [ADR012](adrs/ADR012-scope-via-selectors.md). For the target hunt set, collects the unique selector names referenced across those hunts via Hunt Registry (C006) and Selector Registry (C017), resolves each selector once to a `(source, selector-type, value)` triple, and pulls items via Source Adapter (C005). Each selector appears once in the pull plan regardless of how many hunts reference it; one selector pull reconciles `item_selectors` scope edges for every hunt that references that selector. Write sites: Item Store (C007) receives new items, starting expected trajectories adopted from source-side due dates, the per-item underlying-data-change timestamp, and per-selector `item_selectors` reconciliation (add links for returned items, remove stale links for that selector). Hunt Refresh State (C016) receives per-affected-hunt refresh metadata only — `hunt_refresh` and `hunt_source_availability` — not `(hunt, item)` membership rows anywhere. The multi-source picking rule for the underlying-data-change timestamp (max-of, per-source array, composite) is ADR territory per PRD002; Refresh Engine (C008) holds the write site once the rule lands. Triggered on-demand by `bdog hunt bugel`. `bdog hunt bugel --no-refresh` skips all Refresh Engine (C008) writes — including `item_selectors` reconciliation — and re-synthesizes against the last materialized scope and refresh metadata. `bdog hunt bugel --dry-run` previews the membership and refresh-metadata delta without writing; CLI (C001) owns the dry-run surface and Refresh Engine (C008) returns the preview delta.
 
 #### Relationships
 
-- **Source Adapter (C005)**: reads items and availability.
-- **Hunt Registry (C006)**: receives the target hunt and its selector references.
-- **Selector Registry (C017)**: resolves selector references to executable triples.
-- **Item Store (C007)**: writes new items, starting expected trajectories, and the per-item underlying-data-change timestamp.
-- **Coverage Memory (C016)**: writes per-hunt active set, source-availability, and the set-level refresh marker.
+- **Source Adapter (C005)**: reads items and availability per resolved selector triple.
+- **Hunt Registry (C006)**: supplies target hunts and their selector references for pull-plan construction.
+- **Selector Registry (C017)**: resolves selector references to executable triples; deduped across hunts.
+- **Item Store (C007)**: writes new items, starting expected trajectories, the per-item underlying-data-change timestamp, and reconciles `item_selectors`.
+- **Hunt Refresh State (C016)**: writes `hunt_refresh` and `hunt_source_availability` per affected hunt; does not write membership.
 - **Assessment Engine (C009)**: invokes re-assessment on items whose underlying data has changed since their last assessment.
 
 ### Assessment Engine (C009)

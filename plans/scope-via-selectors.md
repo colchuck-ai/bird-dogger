@@ -166,8 +166,8 @@ Author the decision record. Suggested sections:
 5. `--dry-run`: preview membership delta without writing (pointer to C001 behavior).
 
 **Acceptance criteria:**
-- [ ] C008 does not write `(hunt, item)` rows anywhere.
-- [ ] Selector-deduped refresh is the documented default path.
+- [x] C008 does not write `(hunt, item)` rows anywhere.
+- [x] Selector-deduped refresh is the documented default path.
 
 ---
 
@@ -310,7 +310,7 @@ Author the decision record. Suggested sections:
 | T0 | complete |
 | T1 | complete |
 | T2 | complete |
-| T3 | pending |
+| T3 | complete |
 | T4 | pending |
 | T5 | complete |
 | T6 | complete |
