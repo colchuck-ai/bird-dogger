@@ -1,6 +1,6 @@
 # Config Store (C002)
 
-Owns the single TOML configuration file that holds all declarative entities — sources, selectors, hunts, contacts, and chains. Reads and writes that file on behalf of CLI (C001) and Connection-band registries. Re-reads the file fresh on every CLI invocation; holds no secrets. Source tokens live in Credential Store (C003) only.
+Owns the single TOML file for declarative entities (sources, selectors, hunts, contacts, chains). Reads and writes on behalf of CLI (C001) and Connection-band registries; fresh disk read every CLI invocation; no secrets — tokens live in Credential Store (C003) only.
 
 ## Data model
 
@@ -200,29 +200,23 @@ Edits to selectors, hunts, or sources are live in Config Store (C002) immediatel
 
 ## Edge cases
 
-**Hand-added entity without cross-refs.** Valid interim state. Bird-dogger assigns id on first CLI touch, then wires references.
-
-**Hand-written id collision or sequence skip.** Fail-fast; bird-dogger removes bad id and re-runs so Config Store (C002) assigns a fresh one.
-
-**Cross-reference by name in TOML.** Rejected on read — references must use ids. Use `bdog <noun> info` / `list` to discover ids for hand-editing.
-
-**Empty hunt selector list.** Allowed declaration; hunt refresh pulls nothing until selectors are linked.
-
-**Source rename vs credential key.** Config Store (C002) updates the source `name` field only. Credential Store (C003) keyring entry must track the current source name (implementation detail); bird-dogger may need `source rotate-token` after rename if credential key does not auto-migrate — see [Credential Store (C003)](C003-credential-store.md).
-
-**Concurrent editors.** Two processes writing the same file without coordination can clobber each other. v1 assumes single-user, single-writer discipline per host; file locking is implementation detail.
-
-**Missing or corrupt file.** First-run and recovery behavior is CLI territory; Config Store (C002) surfaces parse errors fail-fast with path and line context when possible.
+- **Hand-added entity without cross-refs:** Valid interim state. Bird-dogger assigns id on first CLI touch, then wires references.
+- **Hand-written id collision or sequence skip:** Fail-fast; bird-dogger removes bad id and re-runs so Config Store (C002) assigns a fresh one.
+- **Cross-reference by name in TOML:** Rejected on read — references must use ids. Use `bdog <noun> info` / `list` to discover ids for hand-editing.
+- **Empty hunt selector list:** Allowed declaration; hunt refresh pulls nothing until selectors are linked.
+- **Source rename vs credential key:** Config Store (C002) updates the source `name` field only. Credential Store (C003) keyring entry must track the current source name (implementation detail); bird-dogger may need `source rotate-token` after rename if credential key does not auto-migrate — see [Credential Store (C003)](C003-credential-store.md).
+- **Concurrent editors:** Two processes writing the same file without coordination can clobber each other. v1 assumes single-user, single-writer discipline per host; file locking is implementation detail.
+- **Missing or corrupt file:** First-run and recovery behavior is CLI territory; Config Store (C002) surfaces parse errors fail-fast with path and line context when possible.
 
 ## Relationships
 
-- **CLI (C001)**: sole external writer for config CRUD; reads via Config Store (C002) on every command; canonical id-assigner orchestrator for hand-edit acknowledgement text.
-- **Credential Store (C003)**: no read/write coupling except shared source **name** as lookup key for secrets; never reads or writes Config Store (C002) token fields because none exist.
-- **Source Registry (C004)**: reads `[[sources]]`; validates declarations against registered types.
-- **Selector Registry (C017)**: reads `[[selectors]]`; validates source id references against Source Registry (C004).
-- **Hunt Registry (C006)**: reads `[[hunts]]`; validates selector id references against Selector Registry (C017).
-- **Contact Registry (C014)**: reads `[[contacts]]` and `[[chains]]`; validates ordered member ids.
-- **Item Store (C007)**: does not store declarative config; item owner/chain fields in SQLite reference contact/chain ids assigned here.
+- **CLI (C001):** sole external writer for config CRUD; reads via Config Store (C002) on every command; canonical id-assigner orchestrator for hand-edit acknowledgement text.
+- **Credential Store (C003):** no read/write coupling except shared source **name** as lookup key for secrets; never reads or writes Config Store (C002) token fields because none exist.
+- **Source Registry (C004):** reads `[[sources]]`; validates declarations against registered types.
+- **Selector Registry (C017):** reads `[[selectors]]`; validates source id references against Source Registry (C004).
+- **Hunt Registry (C006):** reads `[[hunts]]`; validates selector id references against Selector Registry (C017).
+- **Contact Registry (C014):** reads `[[contacts]]` and `[[chains]]`; validates ordered member ids.
+- **Item Store (C007):** does not store declarative config; item owner/chain fields in SQLite reference contact/chain ids assigned here.
 
 ## Success criteria
 
@@ -274,4 +268,4 @@ Alternatively, after step 2, edit `[[hunts]]` by hand to append `"bdogselector-4
 
 ## Open decisions
 
-- **TOML library selection.** Engineering README commits to TOML for human-editable config; the specific Go parser/encoder (strictness, comment preservation on round-trip, key ordering) is deferred ADR territory — same posture as SQLite driver and keyring library choices in the README Technology Choices section.
+- **TOML library selection:** Engineering README commits to TOML for human-editable config; the specific Go parser/encoder (strictness, comment preservation on round-trip, key ordering) is deferred ADR territory — same posture as SQLite driver and keyring library choices in the README Technology Choices section.
