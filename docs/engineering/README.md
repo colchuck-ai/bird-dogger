@@ -6,7 +6,7 @@ The architecture splits into four bands:
 
 1. **Edge.** CLI (C001), Config Store (C002), Credential Store (C003), Renderer (C015). Everything the bird-dogger sees and types passes through these.
 2. **Connection.** Source Registry (C004), Source Adapter (C005), Selector Registry (C017), Hunt Registry (C006). The two-axis decoupling — auth per source, scope per hunt — lives here; selectors are the shared scope primitive hunts compose.
-3. **State.** Item Store (C007), Override Store (C010), Note Store (C012), Touch Log (C013), Contact Registry (C014), Coverage Memory (C016). The bird-dogger's facts about each item and the chase, kept locally. Per-item facts live in Item Store (C007); per-hunt coverage state lives in Coverage Memory (C016).
+3. **State.** Item Store (C007), Override Store (C010), Note Store (C012), Touch Log (C013), Contact Registry (C014), Hunt Refresh State (C016). The bird-dogger's facts about each item and the chase, kept locally. Per-item facts and materialized scope edges live in Item Store (C007); per-hunt refresh metadata lives in Hunt Refresh State (C016).
 4. **Reasoning.** Refresh Engine (C008), Assessment Engine (C009), Synthesis Engine (C011). The product's per-item readings and list-level recommendations, all derived from the State band on demand.
 
 Reasoning reads from Connection and State, writes State, and hands results to the Renderer. It never writes back to sources.
@@ -51,7 +51,7 @@ Parses subcommands and arguments, dispatches to the relevant State or Reasoning 
 - **Config Store (C002)**: reads declared sources, selectors, hunts, contacts, and chains; writes config edits.
 - **Credential Store (C003)**: writes new tokens during source credential setup.
 - **Source Registry (C004), Hunt Registry (C006), Contact Registry (C014), Selector Registry (C017)**: writes registrations and edits.
-- **Item Store (C007), Coverage Memory (C016)**: writes manual item captures, expected trajectories, and inter-item dependencies.
+- **Item Store (C007)**: writes manual item captures, expected trajectories, inter-item dependencies, and manual hunt scope via `item hunt` verbs.
 - **Refresh Engine (C008), Assessment Engine (C009), Override Store (C010), Synthesis Engine (C011), Note Store (C012), Touch Log (C013)**: dispatches chase actions.
 - **Renderer (C015)**: hands results off for rendering.
 
@@ -110,7 +110,7 @@ Holds the declared hunts. Each hunt is a named set of selector references resolv
 
 ### Item Store (C007)
 
-Owns per-item facts: stable internal id of shape `bdogitem-<n>` per [ADR006](adrs/ADR006-native-id-scheme.md) (distinct from source ids), origin tag (manual vs. source-derived), recorded expected trajectories, and inter-item dependencies. Also holds materialized scope edges — `item_selectors(item_id, selector_id)` for source-backed scope and `item_hunts(item_id, hunt_id)` for manual multi-hunt assignment per [ADR012](adrs/ADR012-scope-via-selectors.md). Source-backed scope is refresh-materialized: Refresh Engine (C008) reconciles `item_selectors` on each pull. Manual scope is CLI-materialized: CLI (C001) writes `item_hunts` via `item hunt` verbs. Holds the per-item assessment readings and basis traces Assessment Engine (C009) writes back, and the per-item underlying-data-change timestamp Refresh Engine (C008) writes on refresh (the second of PRD002's two distinct timestamps; "last assessed" lives on the assessment reading Assessment Engine (C009) writes). Item Store (C007) holds item facts and materialized scope edges; Coverage Memory (C016) holds hunt refresh aggregates only — not `(hunt, item)` membership. Identity hub for the State band — every other State-band store (Override Store (C010), Note Store (C012), Touch Log (C013), Contact Registry (C014), Coverage Memory (C016)) keys into items by Item Store (C007)'s internal id. Items may exist with zero selector or hunt links (history retained per [ADR007](adrs/ADR007-no-cascade-removal.md)). Active set for hunt H is computed as `active_set(H)` in ADR012 — selector overlap ∪ manual `item_hunts` rows. SQLite-backed.
+Owns per-item facts: stable internal id of shape `bdogitem-<n>` per [ADR006](adrs/ADR006-native-id-scheme.md) (distinct from source ids), origin tag (manual vs. source-derived), recorded expected trajectories, and inter-item dependencies. Also holds materialized scope edges — `item_selectors(item_id, selector_id)` for source-backed scope and `item_hunts(item_id, hunt_id)` for manual multi-hunt assignment per [ADR012](adrs/ADR012-scope-via-selectors.md). Source-backed scope is refresh-materialized: Refresh Engine (C008) reconciles `item_selectors` on each pull. Manual scope is CLI-materialized: CLI (C001) writes `item_hunts` via `item hunt` verbs. Holds the per-item assessment readings and basis traces Assessment Engine (C009) writes back, and the per-item underlying-data-change timestamp Refresh Engine (C008) writes on refresh (the second of PRD002's two distinct timestamps; "last assessed" lives on the assessment reading Assessment Engine (C009) writes). Item Store (C007) holds item facts and materialized scope edges; Hunt Refresh State (C016) holds hunt refresh aggregates only — not `(hunt, item)` membership. Identity hub for the State band — every other State-band store (Override Store (C010), Note Store (C012), Touch Log (C013), Contact Registry (C014), Hunt Refresh State (C016)) keys into items by Item Store (C007)'s internal id. Items may exist with zero selector or hunt links (history retained per [ADR007](adrs/ADR007-no-cascade-removal.md)). Active set for hunt H is computed as `active_set(H)` in [ADR012](adrs/ADR012-scope-via-selectors.md) — selector overlap ∪ manual `item_hunts` rows. **Coverage scope rule.** For each hunt, the active set is the union of all items linked via `item_selectors` to any of the hunt's selectors and manually captured items in `item_hunts` for that hunt. Scope is adjusted by editing selectors (`selector`, `hunt selector` verbs) or adding/removing manual hunt links (`item hunt add/remove`). There is no per-item accept/reject for source-backed items; when an item stops matching a hunt's selectors, reconciliation removes the `item_selectors` link on the next refresh with no separate drop-off surface. SQLite-backed.
 
 #### Relationships
 
@@ -118,7 +118,7 @@ Owns per-item facts: stable internal id of shape `bdogitem-<n>` per [ADR006](adr
 - **Refresh Engine (C008)**: writes new items, starting expected trajectories from source-side due dates, and reconciles `item_selectors` on refresh.
 - **Assessment Engine (C009)**: read for assessment; written with assessment readings and basis traces.
 - **Override Store (C010), Note Store (C012), Touch Log (C013), Contact Registry (C014)**: hold their own per-item state and reference items by Item Store (C007)'s internal id.
-- **Coverage Memory (C016)**: references items by internal id for per-hunt refresh metadata only; does not store `(hunt, item)` membership.
+- **Hunt Refresh State (C016)**: per-hunt refresh metadata only; does not store `(hunt, item)` membership or enumerate scope.
 - **Synthesis Engine (C011)**: read at synthesis time (active-set enumeration via Item Store (C007) query per ADR012).
 - **Renderer (C015)**: read at render time.
 
@@ -212,22 +212,16 @@ Produces tabular CLI output for list-level views and item-level detail views; pe
 - **Item Store (C007), Assessment Engine (C009), Override Store (C010), Synthesis Engine (C011), Note Store (C012), Touch Log (C013), Contact Registry (C014), Coverage Memory (C016)**: read for the data to render.
 - **CLI (C001)**: invoked by the CLI to produce output.
 
-### Coverage Memory (C016)
+### Hunt Refresh State (C016)
 
-Owns per-hunt coverage state: active set membership per hunt, source-availability state per hunt-refresh, and the set-level last-refresh marker. Keyed by `(hunt, item)` or `(hunt, source)` pairs; items are referenced by Item Store (C007)'s internal id. SQLite-backed.
+Owns per-hunt refresh metadata only — no `(hunt, item)` membership rows. Holds `hunt_refresh(hunt_id, refreshed_at)` as the set-level last-refresh marker per hunt and `hunt_source_availability(hunt_id, source_id, status, reason, refreshed_at)` as the per-hunt source-availability snapshot keyed by `(hunt, source)` per [ADR012](adrs/ADR012-scope-via-selectors.md). Prose uses "Hunt Refresh State (C016)" while the component id **C016** is unchanged. SQLite-backed.
 
-**Coverage scope rule.** For each hunt, the active set is the union of all items returned by the hunt's selectors on last refresh and manually captured items assigned to that hunt. Scope is adjusted by editing selectors (`selector`, `hunt selector` verbs) or adding/removing manual items (`item add`, `item remove`). There is no per-item accept/reject for source-backed items; when an item stops matching a hunt's selectors, it leaves the active set on the next refresh with no separate drop-off surface.
-
-The per-item / per-hunt seam: Item Store (C007) holds facts about items regardless of hunt; Coverage Memory (C016) holds answers to "what does this hunt currently include and last refreshed when."
+The per-item / per-hunt seam: Item Store (C007) holds item facts and materialized scope edges; Hunt Refresh State (C016) holds answers to "when did this hunt last refresh and which sources were available." What a hunt currently includes is computed from Item Store (C007) junctions via `active_set(H)` in [ADR012](adrs/ADR012-scope-via-selectors.md), not read from C016.
 
 #### Relationships
 
-- **CLI (C001)**: written by chase verbs that change coverage state (manual item capture).
-- **Item Store (C007)**: references items by internal id.
-- **Refresh Engine (C008)**: written on every refresh.
-- **Assessment Engine (C009)**: read at assessment time (active set scopes assessment).
-- **Synthesis Engine (C011)**: read at synthesis time.
-- **Renderer (C015)**: read at render time.
+- **Refresh Engine (C008)**: written on every refresh (`hunt_refresh` and `hunt_source_availability` per affected hunt).
+- **Assessment Engine (C009), Synthesis Engine (C011), Renderer (C015)**: may read refresh metadata for freshness display; item enumeration per hunt uses Item Store (C007), not C016.
 
 ### Selector Registry (C017)
 

@@ -146,9 +146,9 @@ Author the decision record. Suggested sections:
 5. Update State band bullet (line ~9): per-hunt refresh metadata in C016; materialized scope edges in C007.
 
 **Acceptance criteria:**
-- [ ] C016 section describes only refresh timestamp + availability snapshot.
-- [ ] Coverage scope rule still reachable from README (C007 or link to ADR012).
-- [ ] Component id C016 unchanged unless a separate rename ADR is explicitly added (default: id stays).
+- [x] C016 section describes only refresh timestamp + availability snapshot.
+- [x] Coverage scope rule still reachable from README (C007 or link to ADR012).
+- [x] Component id C016 unchanged unless a separate rename ADR is explicitly added (default: id stays).
 
 ---
 
@@ -309,7 +309,7 @@ Author the decision record. Suggested sections:
 |---|---|
 | T0 | complete |
 | T1 | complete |
-| T2 | pending |
+| T2 | complete |
 | T3 | pending |
 | T4 | pending |
 | T5 | complete |
