@@ -7,7 +7,7 @@ The architecture splits into four bands:
 1. **Edge.** CLI (C001), Config Store (C002), Credential Store (C003), Renderer (C015). Everything the bird-dogger sees and types passes through these.
 2. **Connection.** Source Registry (C004), Source Adapter (C005), Selector Registry (C017), Hunt Registry (C006). The two-axis decoupling — auth per source, scope per hunt — lives here; selectors are the shared scope primitive hunts compose.
 3. **State.** Item Store (C007), Override Store (C010), Note Store (C012), Touch Log (C013), Contact Registry (C014), Hunt Refresh State (C016). The bird-dogger's facts about each item and the chase, kept locally. Per-item facts and materialized scope edges live in Item Store (C007); per-hunt refresh metadata lives in Hunt Refresh State (C016).
-4. **Reasoning.** Refresh Engine (C008), Assessment Engine (C009), Synthesis Engine (C011). The product's per-item readings and list-level recommendations, all derived from the State band on demand.
+4. **Reasoning.** Refresh Engine (C008), Assessment Engine (C009), Synthesis Engine (C011). The product's per-item readings and list-level recommendations, all derived from the State band on demand. Hunt-scoped item enumeration for assessment and synthesis flows through Item Store (C007) `active_set(H)` queries per [ADR012](adrs/ADR012-scope-via-selectors.md), not Hunt Refresh State (C016) membership reads.
 
 Reasoning reads from Connection and State, writes State, and hands results to the Renderer. It never writes back to sources.
 
@@ -137,12 +137,12 @@ Orchestrates selector-deduped refresh per [ADR012](adrs/ADR012-scope-via-selecto
 
 ### Assessment Engine (C009)
 
-Computes the per-item slip reading (trajectory comparison, silence, combined slip status) and the per-item status reading (basis, confidence, conflict, freshness) over the active set in Coverage Memory (C016), drawing per-item facts from Item Store (C007). Carries "cannot assess," "cannot determine confidence," and "sources disagree" states explicitly per Coverage-over-Precision. Writes assessment readings and basis traces back to Item Store (C007).
+Computes the per-item slip reading (trajectory comparison, silence, combined slip status) and the per-item status reading (basis, confidence, conflict, freshness) over each hunt's active set, enumerating membership via Item Store (C007) `active_set(H)` query per [ADR012](adrs/ADR012-scope-via-selectors.md) — not via Hunt Refresh State (C016) membership reads. Draws per-item facts from Item Store (C007). Carries "cannot assess," "cannot determine confidence," and "sources disagree" states explicitly per Coverage-over-Precision. Writes assessment readings and basis traces back to Item Store (C007).
 
 #### Relationships
 
-- **Item Store (C007)**: reads per-item facts and underlying-data signals; writes assessment readings.
-- **Coverage Memory (C016)**: reads the per-hunt active set the assessment runs against.
+- **Item Store (C007)**: reads per-item facts and underlying-data signals; enumerates `active_set(H)` per hunt; writes assessment readings.
+- **Hunt Refresh State (C016)**: may read hunt refresh metadata for freshness display; not used for active-set enumeration.
 - **Refresh Engine (C008)**: invoked on items flagged as changed since last assessment.
 - **Override Store (C010)**: an active override is surfaced alongside the inferred reading; assessment never silently overwrites it.
 - **Synthesis Engine (C011)**: produces the inputs synthesis consumes.
@@ -159,11 +159,13 @@ One persistent override mechanism, parameterized by the produced judgment it cov
 
 ### Synthesis Engine (C011)
 
-Reads Item Store (C007) (per-item facts), Coverage Memory (C016) (per-hunt coverage state), Assessment Engine (C009) (assessment), Override Store (C010) (overrides), Note Store (C012) (prior notes), Touch Log (C013) (touch / escalation history), and Contact Registry (C014) (owner and chain) to produce per-item urgency ranking, intervention recommendation, and escalation timing recommendation. Carries "cannot recommend" explicitly when inputs are insufficient, per Coverage-over-Precision composed with the override mechanism (PRD001 + PRD004). Also emits a per-item list-level signal pack — which urgency-driving facts to surface alongside each row, ranked by salience to that item's urgency — per J001-O004-R002. The signals themselves are produced under O001 (slip / assessment) and O003 (status); selecting which appear at the list level is a synthesis decision, not a rendering one. Writes nothing back to its inputs; emits a synthesis result consumed by Renderer (C015).
+Reads Item Store (C007) (per-item facts and hunt-scoped item enumeration via `active_set(H)` per [ADR012](adrs/ADR012-scope-via-selectors.md)), Assessment Engine (C009) (assessment), Override Store (C010) (overrides), Note Store (C012) (prior notes), Touch Log (C013) (touch / escalation history), and Contact Registry (C014) (owner and chain) to produce per-item urgency ranking, intervention recommendation, and escalation timing recommendation. May read Hunt Refresh State (C016) hunt refresh metadata when freshness display needs it — not for item enumeration. Carries "cannot recommend" explicitly when inputs are insufficient, per Coverage-over-Precision composed with the override mechanism (PRD001 + PRD004). Also emits a per-item list-level signal pack — which urgency-driving facts to surface alongside each row, ranked by salience to that item's urgency — per J001-O004-R002. The signals themselves are produced under O001 (slip / assessment) and O003 (status); selecting which appear at the list level is a synthesis decision, not a rendering one. Writes nothing back to its inputs; emits a synthesis result consumed by Renderer (C015).
 
 #### Relationships
 
-- **Item Store (C007), Assessment Engine (C009), Override Store (C010), Note Store (C012), Touch Log (C013), Contact Registry (C014), Coverage Memory (C016)**: read at synthesis time.
+- **Item Store (C007)**: reads per-item facts and enumerates `active_set(H)` per hunt at synthesis time.
+- **Assessment Engine (C009), Override Store (C010), Note Store (C012), Touch Log (C013), Contact Registry (C014)**: read at synthesis time.
+- **Hunt Refresh State (C016)**: may read hunt refresh metadata for freshness display; not used for item enumeration.
 - **Renderer (C015)**: receives ranking and recommendations.
 
 ### Note Store (C012)

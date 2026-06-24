@@ -183,8 +183,8 @@ Author the decision record. Suggested sections:
 3. Update relationship bullets that say “Coverage Memory (C016): reads active set”.
 
 **Acceptance criteria:**
-- [ ] C009 and C011 reference Item Store for item enumeration per hunt.
-- [ ] C016 read role is refresh metadata only (or absent from enumeration path).
+- [x] C009 and C011 reference Item Store for item enumeration per hunt.
+- [x] C016 read role is refresh metadata only (or absent from enumeration path).
 
 ---
 
@@ -311,7 +311,7 @@ Author the decision record. Suggested sections:
 | T1 | complete |
 | T2 | complete |
 | T3 | complete |
-| T4 | pending |
+| T4 | complete |
 | T5 | complete |
 | T6 | complete |
 | T7 | complete |
