@@ -107,9 +107,9 @@ Author the decision record. Suggested sections:
 7. **Consequences** — C009/C011 scope reads move to Item Store query; C016 no longer read for membership.
 
 **Acceptance criteria:**
-- [ ] ADR012 exists and matches locked decisions D1–D6.
-- [ ] Active-set union formula appears verbatim.
-- [ ] Selector-deduped refresh algorithm is stepwise and unambiguous.
+- [x] ADR012 exists and matches locked decisions D1–D6.
+- [x] Active-set union formula appears verbatim.
+- [x] Selector-deduped refresh algorithm is stepwise and unambiguous.
 
 ---
 
@@ -307,7 +307,7 @@ Author the decision record. Suggested sections:
 
 | Task | Status |
 |---|---|
-| T0 | pending |
+| T0 | complete |
 | T1 | pending |
 | T2 | pending |
 | T3 | pending |
