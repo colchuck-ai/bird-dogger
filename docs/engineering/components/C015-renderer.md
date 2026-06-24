@@ -52,11 +52,11 @@ Stacked sections:
 
 ### `bdog item list`
 
-Same column set as the bugel's active-items table; no header or drop-off/candidate sections. Intended for ad-hoc scanning when the bird-dogger does not need the full bugel composition.
+Same column set as the bugel's active-items table; no header or source-availability sections. With `--hunt`, shows the active set for that hunt only. Intended for ad-hoc scanning when the bird-dogger does not need the full bugel composition.
 
 ### `bdog hunt info` / `bdog hunt list`
 
-- `bdog hunt info <hunt>` shows hunt name, active flag, set-level last-refresh timestamp, the associated selectors (with each selector's source and type for context), per-source availability state from the most recent refresh, and a count summary (active items, drop-offs since last refresh, candidate items, candidate sources).
+- `bdog hunt info <hunt>` shows hunt name, active flag, set-level last-refresh timestamp, the associated selectors (with each selector's source and type for context), per-source availability state from the most recent refresh, and a count summary (active items and source availability, e.g. `12 active` and `2/3 sources available`).
 - `bdog hunt list` shows one row per hunt: name, active flag, last-refresh, active-item count.
 
 ### Other list/info verbs
