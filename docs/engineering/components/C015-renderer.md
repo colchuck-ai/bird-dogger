@@ -79,6 +79,6 @@ Same column set as the bugel's active-items table; no header or source-availabil
 - Uncertainty and disagreement states render as first-class column values; no blank cells for `cannot-assess`, `sources-disagree`, `cannot-recommend`.
 - Two freshness timestamps (`last data change` and `last assessed`) appear as distinct labeled columns — never merged.
 - Active overrides render with `*` marker; differing inferred value in parentheses.
-- Bugel composition is: header → source availability (when needed) → active items table → notes recap → drop-offs → item candidates → source candidates.
-- `hunt info` count summary includes active items, drop-offs since last refresh, candidate items, and candidate sources.
+- Bugel composition is: header → source availability (when needed) → active items table → notes recap.
+- `hunt info` count summary includes active items and source availability only.
 - Tabular output respects terminal width; no wrapping that loses column alignment.
