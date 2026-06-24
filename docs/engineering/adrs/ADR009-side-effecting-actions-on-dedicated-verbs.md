@@ -14,20 +14,19 @@ verb has an unambiguous role: `add` creates, `remove` deletes,
 `info`/`list` read, `set` writes named fields.
 
 Several operations fit none of those shapes. `source rotate-token`,
-`hunt activate`, `hunt deactivate`, `item accept`, `item reject`,
-`item carry-forward`, `item confirm-owner`, and `touch record-response`
-are not field writes — they record an event, flip a state machine,
-or advance a timestamp. The idempotency posture is different too: `item
-accept` errors with `already in active set` on re-invocation; `item
-confirm-owner` is explicitly not idempotent (each call advances the
-confirmation timestamp). Neither behavior fits `set`, which is
-idempotent by construction (writing the same field value twice is a
-no-op).
+`hunt activate`, `hunt deactivate`, `item confirm-owner`, and
+`touch record-response` are not field writes — they record an event,
+flip a state machine, or advance a timestamp. The idempotency posture
+is different too: `hunt activate` succeeds as a no-op when the hunt is
+already active; `item confirm-owner` is explicitly not idempotent (each
+call advances the confirmation timestamp). Neither behavior fits `set`,
+which is idempotent by construction (writing the same field value twice
+is a no-op).
 
 Without a recorded decision, these operations gravitate toward `set`
 under one of two surface patterns:
 
-- **Valueless flag on `set`** — `bdog item set <item> --accept`. The
+- **Valueless flag on `set`** — `bdog hunt set <hunt> --activate`. The
   flag carries no value; its presence triggers the action. The parsing
   model accepts `--field value` and `--flag` as separate forms, but
   mixing them under `set` blurs the boundary between "change this
@@ -41,42 +40,43 @@ under one of two surface patterns:
 
 Both patterns eventually require `set` to carry state-machine and
 event-recording logic it was not designed to hold. A third option —
-a generic action namespace like `bdog item do accept` — avoids the
+a generic action namespace like `bdog hunt do activate` — avoids the
 `set` contamination but adds a structurally meaningless dispatch layer
 that obscures what the operation actually does.
 
 ## Options
 
 - **A. Dedicated action verbs.** Each side-effecting operation has its
-  own verb at the noun's command surface: `item accept`, `item reject`,
-  `item confirm-owner`, `hunt activate`, `hunt deactivate`, `source
-  rotate-token`, `touch record-response`. The verb is the action; no
-  flag plumbing needed. Each verb owns its error surface
-  (`item accept` → `already in active set`; `hunt activate` →
-  `already active`, no-op). Cost: the `add|remove|info|list|set`
-  template is not the complete verb list; new side-effecting operations
-  demand new verbs rather than a new flag on `set`.
+  own verb at the noun's command surface: `item confirm-owner`, `hunt
+  activate`, `hunt deactivate`, `source rotate-token`, `touch
+  record-response`. The verb is the action; no flag plumbing needed.
+  Each verb owns its error surface (`item confirm-owner` → not
+  idempotent, advances timestamp; `hunt activate` → `already active`,
+  no-op). Cost: the `add|remove|info|list|set` template is not the
+  complete verb list; new side-effecting operations demand new verbs
+  rather than a new flag on `set`.
 - **B. Valueless flags on `set`.** Encode actions as boolean flags:
-  `bdog item set <item> --accept`, `bdog hunt set <hunt>
-  --activate`. Cost: `set` must now carry action dispatch logic; flag
-  and field writes share a parse path; the valueless-flag anti-pattern
-  (`--accept` has no argument, unlike every other `--field value` flag
-  on `set`) is inconsistent; error reporting for action failures
-  (`already in active set`) has no natural home in a field-update verb.
+  `bdog hunt set <hunt> --activate`, `bdog item set <item>
+  --confirm-owner`. Cost: `set` must now carry action dispatch logic;
+  flag and field writes share a parse path; the valueless-flag
+  anti-pattern (`--activate` has no argument, unlike every other
+  `--field value` flag on `set`) is inconsistent; error reporting for
+  action failures (`already active`) has no natural home in a
+  field-update verb.
 - **C. Value-bearing field simulation on `set`.** Expose actions as
-  apparent field writes: `bdog item set <item> --status active`.
+  apparent field writes: `bdog hunt set <hunt> --status active`.
   Looks uniform but encodes semantics in the value string rather than
   in the verb. Cost: `set` must validate legal state transitions for
-  what appears to be a field; the error vocabulary (`already in active
-  set`, `cannot transition from rejected`) bleeds into field-update
+  what appears to be a field; the error vocabulary (`already active`,
+  `cannot deactivate an inactive hunt`) bleeds into field-update
   territory; "fields" that are actually state machines are
   indistinguishable from plain fields in help text and tab completion.
 - **D. Generic action namespace.** Route all actions through a `do`
-  sub-command: `bdog item do accept`, `bdog hunt do activate`. Cost:
-  `do` is a meaningless dispatch wrapper that adds a required word
-  without describing the operation; it solves the `set` contamination
-  but at the cost of a noun-verb-action triple where the middle word
-  contributes nothing.
+  sub-command: `bdog hunt do activate`, `bdog item do confirm-owner`.
+  Cost: `do` is a meaningless dispatch wrapper that adds a required
+  word without describing the operation; it solves the `set`
+  contamination but at the cost of a noun-verb-action triple where the
+  middle word contributes nothing.
 
 ## Decision
 
@@ -85,7 +85,7 @@ Option A — dedicated action verbs.
 The verb layer under each noun is not a closed set constrained to
 `add|remove|info|list|set`. Those five cover the field-management
 shape; side-effecting operations need their own names because they
-*are* their own operations. `item accept` is not a variation of
+*are* their own operations. `item confirm-owner` is not a variation of
 `item set`; it is a distinct action with a distinct precondition, a
 distinct error vocabulary, and a distinct idempotency posture.
 Naming it as such is more honest than routing it through a field-update
@@ -96,9 +96,9 @@ place the architectural boundary at the wrong level: they let `set`'s
 surface look uniform while pushing state-machine complexity into the
 implementation layer below it. The failure surface — what errors can
 the bird-dogger see, and what do they mean? — is also degraded: `bdog
-item set <item> --accept` returning `already in active set` is
-confusing because `set` has no other concept of "already done" states.
-`bdog item accept` returning the same message is self-explanatory.
+hunt set <hunt> --activate` returning `already active` is confusing
+because `set` has no other concept of "already done" states. `bdog hunt
+activate` returning the same message is self-explanatory.
 
 The generic-action-namespace option (D) solves the `set` contamination
 but introduces structural noise; the middle `do` word adds nothing.
@@ -119,8 +119,8 @@ but introduces structural noise; the middle `do` word adds nothing.
   recording. No timestamp advancing. A future `set` sub-command that
   violates this contract is a signal that the operation should be a
   dedicated verb instead.
-- Error reporting is precise per action verb. `item accept` errors on
-  `already in active set`; `item reject` errors on `already rejected`;
+- Error reporting is precise per action verb. `item confirm-owner`
+  advances the confirmation timestamp on each call (not idempotent);
   `hunt activate` succeeds as a no-op if the hunt is already active
   (idempotent). These semantics are unreachable from `set` without
   special-casing that would break its uniform contract.
