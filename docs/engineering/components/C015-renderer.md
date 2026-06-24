@@ -36,12 +36,6 @@ The primary triage surface. Composed sections, in order:
 
 4. **Notes recap** (collapsed by default; expanded with `--show-notes` once the flag is added — out of scope for now). At minimum, the table marks rows with a `note` indicator when the item has any active notes; the bird-dogger drills into `bdog item info` to read them.
 
-5. **Drop-offs.** Items that left the active set since the previous refresh. Each row shows `id`, `title`, last status, reason (`closed-at-source`, `selector-no-longer-matches`, `source-removed`). PRD001 obligation: drop-offs are a distinct section, never silently disappeared.
-
-6. **Item candidates.** Items in watched sources excluded from the active set, with `id`, `title`, source, and the selector that surfaced them as adjacent. The bird-dogger accepts or rejects via `bdog item accept` / `bdog item reject`.
-
-7. **Source candidates.** Sources referenced from watched data but not registered (e.g., a Jira issue mentioning another project's key). Listed with the reference text and the hunt that observed it. The bird-dogger acts via `bdog source add` or ignores; no inline dismiss verb in v1.
-
 ### `bdog item info`
 
 Stacked sections:
@@ -72,6 +66,8 @@ Same column set as the bugel's active-items table; no header or drop-off/candida
 ## Design decisions
 
 **Renderer surfaces are part of the design, not implementation detail.** Renderer (C015) carries PRD001 / PRD002 / PRD004 readability obligations at the rendering layer; Synthesis Engine (C011) carries the list-level signal-selection obligation (J001-O004-R002) on its synthesis output. Per-verb output shapes are specified above so uncertainty states, two-timestamp freshness, and override disagreement have concrete columns and markers — not "we'll figure out the display later."
+
+**Source candidates are out of bugel scope.** Product O002 RSK002 states candidate sources are not surfaced automatically; the engineering README does not describe a source-candidate bugel section. The bugel spec therefore omits drop-offs, item candidates, and source candidates — coverage visibility is the active set plus source availability, not audit trails for items that left or were never admitted.
 
 ## Relationships
 
