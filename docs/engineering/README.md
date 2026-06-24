@@ -110,15 +110,16 @@ Holds the declared hunts. Each hunt is a named set of selector references resolv
 
 ### Item Store (C007)
 
-Owns per-item facts: stable internal id of shape `bdogitem-<n>` per [ADR006](adrs/ADR006-native-id-scheme.md) (distinct from source ids), origin tag (manual vs. source-derived), recorded expected trajectories, and inter-item dependencies. Also holds the per-item assessment readings and basis traces Assessment Engine (C009) writes back, and the per-item underlying-data-change timestamp Refresh Engine (C008) writes on refresh (the second of PRD002's two distinct timestamps; "last assessed" lives on the assessment reading Assessment Engine (C009) writes). Identity hub for the State band — every other State-band store (Override Store (C010), Note Store (C012), Touch Log (C013), Contact Registry (C014), Coverage Memory (C016)) keys into items by Item Store (C007)'s internal id. SQLite-backed.
+Owns per-item facts: stable internal id of shape `bdogitem-<n>` per [ADR006](adrs/ADR006-native-id-scheme.md) (distinct from source ids), origin tag (manual vs. source-derived), recorded expected trajectories, and inter-item dependencies. Also holds materialized scope edges — `item_selectors(item_id, selector_id)` for source-backed scope and `item_hunts(item_id, hunt_id)` for manual multi-hunt assignment per [ADR012](adrs/ADR012-scope-via-selectors.md). Source-backed scope is refresh-materialized: Refresh Engine (C008) reconciles `item_selectors` on each pull. Manual scope is CLI-materialized: CLI (C001) writes `item_hunts` via `item hunt` verbs. Holds the per-item assessment readings and basis traces Assessment Engine (C009) writes back, and the per-item underlying-data-change timestamp Refresh Engine (C008) writes on refresh (the second of PRD002's two distinct timestamps; "last assessed" lives on the assessment reading Assessment Engine (C009) writes). Item Store (C007) holds item facts and materialized scope edges; Coverage Memory (C016) holds hunt refresh aggregates only — not `(hunt, item)` membership. Identity hub for the State band — every other State-band store (Override Store (C010), Note Store (C012), Touch Log (C013), Contact Registry (C014), Coverage Memory (C016)) keys into items by Item Store (C007)'s internal id. Items may exist with zero selector or hunt links (history retained per [ADR007](adrs/ADR007-no-cascade-removal.md)). Active set for hunt H is computed as `active_set(H)` in ADR012 — selector overlap ∪ manual `item_hunts` rows. SQLite-backed.
 
 #### Relationships
 
-- **CLI (C001)**: written by chase verbs that record per-item facts (manual item capture, expected-trajectory recording, inter-item dependency recording).
-- **Refresh Engine (C008)**: writes new items and starting expected trajectories from source-side due dates.
+- **CLI (C001)**: written by chase verbs that record per-item facts (manual item capture, expected-trajectory recording, inter-item dependency recording) and by `item hunt` verbs that write `item_hunts`.
+- **Refresh Engine (C008)**: writes new items, starting expected trajectories from source-side due dates, and reconciles `item_selectors` on refresh.
 - **Assessment Engine (C009)**: read for assessment; written with assessment readings and basis traces.
-- **Override Store (C010), Note Store (C012), Touch Log (C013), Contact Registry (C014), Coverage Memory (C016)**: hold their own per-item or per-hunt state but reference items by Item Store (C007)'s internal id.
-- **Synthesis Engine (C011)**: read at synthesis time.
+- **Override Store (C010), Note Store (C012), Touch Log (C013), Contact Registry (C014)**: hold their own per-item state and reference items by Item Store (C007)'s internal id.
+- **Coverage Memory (C016)**: references items by internal id for per-hunt refresh metadata only; does not store `(hunt, item)` membership.
+- **Synthesis Engine (C011)**: read at synthesis time (active-set enumeration via Item Store (C007) query per ADR012).
 - **Renderer (C015)**: read at render time.
 
 ### Refresh Engine (C008)

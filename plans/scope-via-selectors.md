@@ -127,8 +127,8 @@ Author the decision record. Suggested sections:
 5. Note: items may exist with zero selector/hunt links (history retained per ADR007 / RSK003).
 
 **Acceptance criteria:**
-- [ ] C007 lists both junction tables and their writers.
-- [ ] No claim that C016 stores `(hunt, item)` membership.
+- [x] C007 lists both junction tables and their writers.
+- [x] No claim that C016 stores `(hunt, item)` membership.
 
 ---
 
@@ -308,7 +308,7 @@ Author the decision record. Suggested sections:
 | Task | Status |
 |---|---|
 | T0 | complete |
-| T1 | pending |
+| T1 | complete |
 | T2 | pending |
 | T3 | pending |
 | T4 | pending |
