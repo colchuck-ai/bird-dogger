@@ -1,12 +1,10 @@
 # Hunt Refresh State (C016)
 
-Owns per-hunt refresh metadata only — no `(hunt, item)` membership rows. Holds the set-level last-refresh marker and the per-hunt source-availability snapshot produced on each refresh. Prose uses **Hunt Refresh State (C016)**; the component id **C016** is unchanged from the pre-[ADR012](../adrs/ADR012-scope-via-selectors.md) "Coverage Memory" label. SQLite-backed; metadata-only reads for downstream Reasoning and Renderer components.
-
-What a hunt currently includes is **never** stored or enumerated here. Scope membership is computed from Item Store (C007) junctions via `active_set(H)` per [ADR012](../adrs/ADR012-scope-via-selectors.md).
+Owns per-hunt refresh metadata only — the set-level last-refresh marker and per-hunt source-availability snapshots. Never stores or enumerates hunt item membership; scope flows through Item Store (C007) `active_set(H)`.
 
 ## Data model
 
-Two tables. No `(hunt, item)` membership table exists or is planned.
+SQLite-backed; metadata-only reads for downstream Reasoning and Renderer components. Two tables. No `(hunt, item)` membership table exists or is planned.
 
 ### `hunt_refresh(hunt_id, refreshed_at)`
 
@@ -83,17 +81,12 @@ Defined in [ADR012](../adrs/ADR012-scope-via-selectors.md) and owned by Item Sto
 
 ## Edge cases
 
-**Shared selector across hunts.** One selector pull reconciles `item_selectors` once; each referencing hunt receives its own `hunt_refresh` and `hunt_source_availability` updates. Active-set changes are visible in every affected hunt via Item Store (C007) links, without duplicate membership storage in C016.
-
-**Hunt never refreshed.** No `hunt_refresh` row; no availability rows. `hunt info` and bugel header show absent or unknown last-refresh semantics per Renderer (C015); active-item count still comes from `|active_set(H)|` in Item Store (C007).
-
-**Selector edit before refresh.** Selector declaration changes are live in Config Store (C002) immediately; `item_selectors` and C016 metadata reflect the last pull until the next full refresh. A `--no-refresh` bugel intentionally uses stale scope edges and stale refresh metadata together.
-
-**Source unavailable for one hunt's selectors.** `hunt_source_availability` records the failure for `(hunt, source)`. Items already linked via `item_selectors` may remain in `active_set(H)` but render as `source-unavailable` per J001-O001-R006 — membership enumeration still flows through Item Store (C007), not C016.
-
-**Manual-only hunts.** Hunts whose selectors resolve only to manual items (no source pulls) still receive `hunt_refresh` updates when refresh runs; availability rows cover sources referenced by the hunt's selector set, not manual items.
-
-**Multi-hunt bugel.** Each hunt in the target set gets independent C016 rows for the same refresh pass timestamp where applicable.
+- **Shared selector across hunts:** One selector pull reconciles `item_selectors` once; each referencing hunt receives its own `hunt_refresh` and `hunt_source_availability` updates. Active-set changes are visible in every affected hunt via Item Store (C007) links, without duplicate membership storage in C016.
+- **Hunt never refreshed:** No `hunt_refresh` row; no availability rows. `hunt info` and bugel header show absent or unknown last-refresh semantics per Renderer (C015); active-item count still comes from `|active_set(H)|` in Item Store (C007).
+- **Selector edit before refresh:** Selector declaration changes are live in Config Store (C002) immediately; `item_selectors` and C016 metadata reflect the last pull until the next full refresh. A `--no-refresh` bugel intentionally uses stale scope edges and stale refresh metadata together.
+- **Source unavailable for one hunt's selectors:** `hunt_source_availability` records the failure for `(hunt, source)`. Items already linked via `item_selectors` may remain in `active_set(H)` but render as `source-unavailable` per J001-O001-R006 — membership enumeration still flows through Item Store (C007), not C016.
+- **Manual-only hunts:** Hunts whose selectors resolve only to manual items (no source pulls) still receive `hunt_refresh` updates when refresh runs; availability rows cover sources referenced by the hunt's selector set, not manual items.
+- **Multi-hunt bugel:** Each hunt in the target set gets independent C016 rows for the same refresh pass timestamp where applicable.
 
 ## Relationships
 
@@ -115,7 +108,7 @@ Defined in [ADR012](../adrs/ADR012-scope-via-selectors.md) and owned by Item Sto
 
 ### Design decisions
 
-**Slimmed role post-ADR012.** [ADR012](../adrs/ADR012-scope-via-selectors.md) moved materialized scope edges to Item Store (C007) (`item_selectors`, `item_hunts`). Hunt Refresh State (C016) retains only hunt-level refresh aggregates. The old "Coverage Memory" name reflected membership storage; the new prose name reflects the remaining responsibility.
+**Slimmed role post-ADR012.** [ADR012](../adrs/ADR012-scope-via-selectors.md) moved materialized scope edges to Item Store (C007) (`item_selectors`, `item_hunts`). Hunt Refresh State (C016) retains only hunt-level refresh aggregates. The old "Coverage Memory" name reflected membership storage; the new prose name reflects the remaining responsibility. Component id **C016** is unchanged from the pre-ADR012 label.
 
 **Per-hunt availability snapshot.** Source availability is stored per `(hunt, source)` so Renderer (C015) can show hunt-scoped availability in bugel header and `hunt info` without inferring hunt context from a global source-health table alone.
 
@@ -123,4 +116,5 @@ Defined in [ADR012](../adrs/ADR012-scope-via-selectors.md) and owned by Item Sto
 
 ## Open decisions
 
-None — scope split, table shapes, write site, and enumeration rule are recorded in [ADR012](../adrs/ADR012-scope-via-selectors.md). Exact `status` enum values and Source Adapter (C005) → Refresh Engine (C008) handoff for availability remain product/engineering detail under J001-O001-R006; C015 documents renderer-facing reason strings.
+- **Scope split and enumeration rule.** Recorded in [ADR012](../adrs/ADR012-scope-via-selectors.md) — table shapes, write site, and the rule that C016 never enumerates items are settled there.
+- **`status` enum values and Source Adapter handoff.** Exact `status` enum values and Source Adapter (C005) → Refresh Engine (C008) handoff for availability remain product/engineering detail under J001-O001-R006; C015 documents renderer-facing reason strings.
