@@ -94,8 +94,8 @@ Capture the full set of stale references before editing.
 3. Keep **Source-backed item scope** paragraph unchanged — it already matches the canonical model.
 
 **Acceptance criteria:**
-- [ ] No `accept`, `reject`, or `carry-forward` subcommands remain under `item`.
-- [ ] Manual capture (`item add` / `item remove` / `item set --hunt`) and source-backed scope rule still documented.
+- [x] No `accept`, `reject`, or `carry-forward` subcommands remain under `item`.
+- [x] Manual capture (`item add` / `item remove` / `item set --hunt`) and source-backed scope rule still documented.
 
 ---
 
@@ -289,7 +289,7 @@ Product O002 RSK002 states candidate sources are **not** surfaced automatically.
 | Task | Status |
 |---|---|
 | T0 | complete |
-| T1 | pending |
+| T1 | complete |
 | T2 | pending |
 | T3 | pending |
 | T4 | pending |

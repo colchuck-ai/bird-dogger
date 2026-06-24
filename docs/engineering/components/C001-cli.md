@@ -222,13 +222,9 @@ bdog item set <item>
     --clear-pace
 
 bdog item confirm-owner <item>
-
-bdog item accept        <item> --hunt <hunt>
-bdog item reject        <item> --hunt <hunt>
-bdog item carry-forward <item> --hunt <hunt>
 ```
 
-`confirm-owner` records the owner-confirmation timestamp; each invocation advances it (not idempotent by design). Coverage actions operate on items in candidate or drop-off state per hunt: `accept` moves a candidate into the active set, `reject` marks it excluded, `carry-forward` keeps a drop-off in the active set. Re-issuing any coverage verb when the item is already in the target state errors with `already <state>`.
+`confirm-owner` records the owner-confirmation timestamp; each invocation advances it (not idempotent by design).
 
 Trajectory cross-validation: `due-date` requires `--due`; `pace` requires `--pace`; `none` clears both. Conflicting trajectory and field combinations error with resolution hint.
 
