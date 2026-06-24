@@ -333,11 +333,10 @@ List-level and detail output shapes are specified in [Renderer (C015)](C015-rend
 | `touch record-response` | Idempotent on identical input; overwrites on different input |
 | `hunt activate/deactivate` | Idempotent |
 | `item confirm-owner` | Not idempotent; advances timestamp each invocation |
-| `item accept/reject/carry-forward` | Not idempotent across state transitions; errors with `already <state>` when item is already in the target state |
 
 **Bugel as sole refresh path.** `hunt bugel` sequences refresh → re-assess → synthesize → render. No standalone refresh command. `--no-refresh` skips the pull; `--dry-run` previews without writing.
 
-**Side-effecting actions on own verbs.** `rotate-token`, `activate`/`deactivate`, `confirm-owner`, and `record-response` are not flags on `set` — they record events or advance state machines.
+**Side-effecting actions on own verbs.** `source rotate-token`, `hunt activate`/`deactivate`, `item confirm-owner`, and `touch record-response` are not flags on `set` — they record events or advance state machines.
 
 **Text field naming.** `--reason` (override), `--message` (touch), `--about` (contact), `--text` (note) keep four distinct concepts separate at the CLI surface.
 

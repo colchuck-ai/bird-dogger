@@ -128,8 +128,8 @@ Capture the full set of stale references before editing.
 3. Scan **Edge cases** and **Design decisions** for any remaining candidate/drop-off language; remove or rewrite.
 
 **Acceptance criteria:**
-- [ ] Idempotence table has no coverage-action rows.
-- [ ] Side-effecting verb lists use only verbs that still exist in the doc.
+- [x] Idempotence table has no coverage-action rows.
+- [x] Side-effecting verb lists use only verbs that still exist in the doc.
 
 ---
 
@@ -291,7 +291,7 @@ Product O002 RSK002 states candidate sources are **not** surfaced automatically.
 | T0 | complete |
 | T1 | complete |
 | T2 | complete |
-| T3 | pending |
+| T3 | done |
 | T4 | pending |
 | T5 | pending |
 | T6 | pending |
