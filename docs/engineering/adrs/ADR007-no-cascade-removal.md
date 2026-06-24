@@ -25,10 +25,11 @@ possible:
    how to clear them.
 
 There is a deliberate asymmetry in removal behavior. Source-derived
-items disappear automatically when their owning hunt or selector is
-removed — the source manages their lifecycle. Manual items have no
-source to clean them up; they require an explicit reassignment or
-removal step before the owning hunt can be removed.
+items lose scope links when a selector or hunt reference is removed
+and **`item_selectors`** reconciles on the next refresh — the item row
+remains in **Item Store (C007)**. Manual items have no source lifecycle;
+every **`item_hunts`** row for the hunt must be cleared before the hunt
+can be removed (multi-hunt manual items may retain links to other hunts).
 
 Without a recorded decision, implementations might default to cascade
 for convenience and produce silent data loss. The bird-dogger has no
@@ -70,12 +71,13 @@ immediately with the exact verb to clear it, so the sequence is
 visible, auditable, and reversible at each step.
 
 The asymmetry between source-derived and manual items is deliberate.
-Source-derived items are managed by the source; removing the owning
-hunt or selector removes the context that makes them live, but the
-underlying item records remain until the source is removed or the
-selector stops matching them. Manual items carry no source lifecycle —
-they must be explicitly re-assigned (via `item set --hunt <other>`) or
-removed (via `item remove`) before the owning hunt can be removed.
+Source-derived items are managed by the source; removing a selector from
+a hunt or deleting the selector drops scope via **`item_selectors`**
+reconciliation, but the item row remains in **Item Store (C007)**. Manual
+items carry no source lifecycle — clear every **`item_hunts`** row for the
+target hunt (via `item hunt remove` per item, or `item remove` to delete
+the item entirely) before the hunt can be removed. A manual item in
+multiple hunts keeps its other **`item_hunts`** rows untouched.
 
 ## Consequences
 
@@ -92,7 +94,7 @@ removed (via `item remove`) before the owning hunt can be removed.
   | `selector` | Remove the selector from every hunt that references it (via `hunt selector remove`). |
   | `contact` | Remove from every chain that references it (via `chain member remove`) and clear any item owner reference (via `item set --owner none`). |
   | `chain` | Clear the chain reference from every item that references it (via `item set --chain none`). |
-  | `hunt` | Reassign or remove every manual item whose `--hunt` is this hunt (via `item set --hunt <other>` or `item remove`). Source-derived items disappear from coverage automatically. |
+  | `hunt` | Clear all **`item_hunts`** rows for this hunt — `item hunt remove` for each manual item, or `item remove` to delete the item. Source-derived scope for the hunt clears when hunt selector references are removed; no manual unlink for source-backed items. See [ADR012](ADR012-scope-via-selectors.md). |
   | `item` (manual) | None; manual items have no downstream references. (Source-derived items cannot be removed individually — they are managed via the owning selector.) |
 
 - `remove` is not idempotent for declarative entities: removing a

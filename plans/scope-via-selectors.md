@@ -249,8 +249,8 @@ Author the decision record. Suggested sections:
 4. **ADR007:** hunt `remove` pre-step for manual items → remove all `item_hunts` rows for that hunt (or block until none); source-derived scope clears via selector/hunt membership, not manual unlink.
 
 **Acceptance criteria:**
-- [ ] No ADR still claims `(hunt, item)` membership lives in C016.
-- [ ] ADR007 manual-item teardown matches multi-hunt model.
+- [x] No ADR still claims `(hunt, item)` membership lives in C016.
+- [x] ADR007 manual-item teardown matches multi-hunt model.
 
 ---
 
@@ -314,7 +314,7 @@ Author the decision record. Suggested sections:
 | T4 | pending |
 | T5 | pending |
 | T6 | pending |
-| T7 | pending |
+| T7 | complete |
 | T8 | pending |
 | T9 | pending |
 

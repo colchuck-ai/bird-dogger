@@ -119,11 +119,13 @@ and ties item identity to source health rather than to the local store.
   type disambiguator.
 - **Item Store (C007)** is the identity hub for the State band. Every
   other State-band store — **Override Store (C010)**, **Note Store (C012)**, **Touch Log (C013)**, **Contact Registry (C014)**, **Coverage Memory (C016)** — keys into
-  items by **Item Store (C007)**'s `bdogitem-<n>`. An item that appears in two hunts
-  via the same source is one `bdogitem-<n>` in **Item Store (C007)** and two membership
-  rows in **Coverage Memory (C016)**. See
-  [engineering README](../README.md) and
-  [ADR001](ADR001-source-hunt-decoupling.md).
+  items by **Item Store (C007)**'s `bdogitem-<n>`. Materialized scope junctions
+  **`item_selectors`** and **`item_hunts`** (per [ADR012](ADR012-scope-via-selectors.md))
+  also key on `bdogitem-<n>` on the item side, paired with declarative entity ids
+  (`bdogselector-<n>`, `bdoghunt-<n>`) for selector and hunt references. An item
+  that appears in two hunts via a shared selector is one `bdogitem-<n>` with scope
+  edges in **Item Store (C007)**, not `(hunt, item)` membership in **Coverage Memory (C016)**.
+  See [engineering README](../README.md) and [ADR001](ADR001-source-hunt-decoupling.md).
 - **Config Store (C002)** owns the per-kind integer counters for
   declarative entities and is responsible for the assignment and
   write-back behavior on hand-added TOML entities. See
