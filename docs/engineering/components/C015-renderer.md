@@ -67,7 +67,7 @@ Same column set as the bugel's active-items table; no header or source-availabil
 
 **Renderer surfaces are part of the design, not implementation detail.** Renderer (C015) carries PRD001 / PRD002 / PRD004 readability obligations at the rendering layer; Synthesis Engine (C011) carries the list-level signal-selection obligation (J001-O004-R002) on its synthesis output. Per-verb output shapes are specified above so uncertainty states, two-timestamp freshness, and override disagreement have concrete columns and markers — not "we'll figure out the display later."
 
-**Source candidates are out of bugel scope.** Product O002 RSK002 states candidate sources are not surfaced automatically; the engineering README does not describe a source-candidate bugel section. The bugel spec therefore omits drop-offs, item candidates, and source candidates — coverage visibility is the active set plus source availability, not audit trails for items that left or were never admitted.
+**Source candidates are out of bugel scope.** Product O002 RSK002 states candidate sources are not surfaced automatically; the engineering README does not describe a source-candidate bugel section. The bugel spec therefore lists only header, source availability (when needed), active items table, and notes recap — coverage visibility is the active set plus source availability, not audit trails for items that left or were never admitted.
 
 ## Relationships
 

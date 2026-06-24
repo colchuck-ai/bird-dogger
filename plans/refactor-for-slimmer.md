@@ -296,7 +296,7 @@ Product O002 RSK002 states candidate sources are **not** surfaced automatically.
 | T5 | complete |
 | T6 | complete |
 | T7 | complete |
-| T8 | pending |
+| T8 | complete |
 | T9 | pending |
 
 ---
