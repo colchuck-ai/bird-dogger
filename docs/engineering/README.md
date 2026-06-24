@@ -42,6 +42,8 @@ Reasoning reads from Connection and State, writes State, and hands results to th
 
 ## Components
 
+Per-component deep docs live under [`components/`](components/). Every component page follows the same section template — see [`components/README.md`](components/README.md) — shaped after [CLI (C001)](components/C001-cli.md) and [Renderer (C015)](components/C015-renderer.md): Data model → Interfaces → Behavior → Edge cases → Relationships → Success criteria → Notes (design decisions) → **Open decisions** (required when ADR territory remains).
+
 ### CLI (C001)
 
 Parses subcommands and arguments, dispatches to the relevant State or Reasoning component, and pipes results to the Renderer. Owns the `bdog` binary entry point; [CLI (C001)](components/C001-cli.md) is the sole owner of the full verb surface. Configuration nouns — source, selector, hunt, contact, chain — each support declaration and lifecycle management; chase nouns — item, override, touch, note — support per-item state management. The bugel subcommand sequences refresh → re-assess → synthesize → render for one or more hunts and is the only refresh path; a no-refresh variant re-synthesizes against current State without pulling sources. Tokens entered through the CLI flow to Credential Store (C003), never to Config Store (C002).
