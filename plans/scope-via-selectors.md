@@ -227,8 +227,8 @@ Author the decision record. Suggested sections:
 4. Optional: note when selector declaration changed since `last_refresh` (deferred UX — one sentence under Design decisions if not specifying markers yet).
 
 **Acceptance criteria:**
-- [ ] Renderer docs do not imply C016 enumerates items.
-- [ ] Multi-hunt manual items display correctly in Identity.
+- [x] Renderer docs do not imply C016 enumerates items.
+- [x] Multi-hunt manual items display correctly in Identity.
 
 ---
 
@@ -313,7 +313,7 @@ Author the decision record. Suggested sections:
 | T3 | pending |
 | T4 | pending |
 | T5 | complete |
-| T6 | pending |
+| T6 | complete |
 | T7 | complete |
 | T8 | pending |
 | T9 | pending |

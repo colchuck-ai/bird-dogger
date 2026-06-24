@@ -24,7 +24,7 @@ The primary triage surface. Composed sections, in order:
 
 2. **Source availability detail** (only when any source is unavailable). Lists the unavailable sources, the reason (network-error, file-missing, unparseable, auth-failed), and the affected hunts. Items from unavailable sources surface in the main table marked `source-unavailable` per J001-O001-R006 — never blank, never assumed-healthy.
 
-3. **Active items table**, ordered by urgency rank. Columns:
+3. **Active items table**, ordered by urgency rank. Each row is one member of `active_set(H)` for the hunt(s) in scope — the union of items linked via `item_selectors` to any selector on the hunt and items linked via `item_hunts` for manual membership per [ADR012](../adrs/ADR012-scope-via-selectors.md). Renderer (C015) does not read Hunt Refresh State (C016) to enumerate rows; Item Store (C007) supplies the active-set query. Columns:
    - `id` — native id (`bdogitem-N`); source id shown as `(SUPPLY-1234)` suffix when present.
    - `title` — truncated.
    - `slip` — slip status. Accepts uncertainty states `cannot-assess` and `not-yet-assessed` as first-class values per PRD001.
@@ -40,7 +40,7 @@ The primary triage surface. Composed sections, in order:
 
 Stacked sections:
 
-- **Identity.** Native id, source id (if any), origin (manual or source-derived), title, owning hunt (for manual items), current active overrides (one line per field).
+- **Identity.** Native id, source id (if any), origin (manual or source-derived), title, **Hunts** — every hunt the item is in scope for, derived from `active_set` membership (selector overlap ∪ manual `item_hunts`), one line per hunt with an origin hint (`selector-matched` when the item reaches the hunt via `item_selectors`, `manually assigned` when via `item_hunts`; an item may show both hints across different hunts, and a manual item may list multiple hunts), current active overrides (one line per field).
 - **Freshness.** Two timestamps labeled distinctly: `last data change` and `last assessed`. Both shown with absolute and relative formats. PRD002 obligation: these are never merged into a single "last updated."
 - **Slip & status.** Current slip reading, status reading, basis summary. With `--show-basis`, expands to per-source inputs and any disagreement detail; uncertainty states render with their explanation ("not yet assessed because trajectory not recorded").
 - **Overrides.** For each field with any history: current state (active or inactive), value, when set, reason, and the current inferred reading from synthesis when it differs (PRD004 surface). With `--show-history`, expands to full override history including deactivated entries.
@@ -52,11 +52,11 @@ Stacked sections:
 
 ### `bdog item list`
 
-Same column set as the bugel's active-items table; no header or source-availability sections. With `--hunt`, shows the active set for that hunt only. Intended for ad-hoc scanning when the bird-dogger does not need the full bugel composition.
+Same column set as the bugel's active-items table; no header or source-availability sections. With `--hunt`, lists exactly `active_set(H)` for the named hunt — the same Item Store (C007) query the bugel uses, not a membership read from Hunt Refresh State (C016). Intended for ad-hoc scanning when the bird-dogger does not need the full bugel composition.
 
 ### `bdog hunt info` / `bdog hunt list`
 
-- `bdog hunt info <hunt>` shows hunt name, active flag, set-level last-refresh timestamp, the associated selectors (with each selector's source and type for context), per-source availability state from the most recent refresh, and a count summary (active items and source availability, e.g. `12 active` and `2/3 sources available`).
+- `bdog hunt info <hunt>` shows hunt name, active flag, set-level last-refresh timestamp (read from Hunt Refresh State (C016)), the associated selectors (with each selector's source and type for context), per-source availability state from the most recent refresh (also from C016), and a count summary where the active-item count is `|active_set(H)|` computed from Item Store (C007) scope edges — e.g. `12 active` and `2/3 sources available`. The count is a query result, not evidence that C016 stores item membership.
 - `bdog hunt list` shows one row per hunt: name, active flag, last-refresh, active-item count.
 
 ### Other list/info verbs
@@ -69,9 +69,13 @@ Same column set as the bugel's active-items table; no header or source-availabil
 
 **Source candidates are out of bugel scope.** Product O002 RSK002 states candidate sources are not surfaced automatically; the engineering README does not describe a source-candidate bugel section. The bugel spec therefore lists only header, source availability (when needed), active items table, and notes recap — coverage visibility is the active set plus source availability, not audit trails for items that left or were never admitted.
 
+**Scope display follows Item Store (C007), not Hunt Refresh State (C016).** List and detail surfaces enumerate items via the `active_set(H)` union defined in [ADR012](../adrs/ADR012-scope-via-selectors.md). Hunt Refresh State (C016) contributes only hunt-level refresh metadata (last refresh, source availability) to header and `hunt info` — never item membership rows. Multi-hunt manual items show every hunt link in the Identity **Hunts** block with per-hunt origin hints. Surfacing when a selector declaration changed since `last_refresh` (stale-scope warning) is deferred UX; v1 docs do not specify a marker glyph or column for that case.
+
 ## Relationships
 
-- **Item Store (C007), Assessment Engine (C009), Override Store (C010), Synthesis Engine (C011), Note Store (C012), Touch Log (C013), Contact Registry (C014), Coverage Memory (C016)**: read for the data to render.
+- **Item Store (C007)**: read for per-item facts and `active_set` enumeration (scope edges `item_selectors` / `item_hunts`).
+- **Assessment Engine (C009), Override Store (C010), Synthesis Engine (C011), Note Store (C012), Touch Log (C013), Contact Registry (C014)**: read for the data to render.
+- **Hunt Refresh State (C016)**: read for set-level last-refresh and per-source availability only — not for item enumeration.
 - **CLI (C001)**: invoked to produce output.
 
 ## Success criteria
@@ -80,5 +84,7 @@ Same column set as the bugel's active-items table; no header or source-availabil
 - Two freshness timestamps (`last data change` and `last assessed`) appear as distinct labeled columns — never merged.
 - Active overrides render with `*` marker; differing inferred value in parentheses.
 - Bugel composition is: header → source availability (when needed) → active items table → notes recap.
-- `hunt info` count summary includes active items and source availability only.
+- `hunt info` active-item count reflects `|active_set(H)|` from Item Store (C007); source availability from Hunt Refresh State (C016) only.
+- `item info` Identity lists all hunts in scope with origin hints; no sole "owning hunt" field.
+- Bugel and `item list --hunt` rows match `active_set(H)`; Renderer (C015) does not imply C016 enumerates items.
 - Tabular output respects terminal width; no wrapping that loses column alignment.
