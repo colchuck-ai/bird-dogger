@@ -526,6 +526,13 @@ bdog hunt bugel supply-q3 --dry-run
 
 # run the bugel for real
 bdog hunt bugel supply-q3
+
+# later: narrow scope by editing the selector — no per-item action
+bdog selector set supply-incidents \
+    --selector "project = SUPPLY AND issuetype = Incident AND priority = P0 AND status != Done"
+bdog hunt bugel supply-q3 --dry-run
+bdog hunt bugel supply-q3
+# items that no longer match leave the active set on the next refresh
 ```
 
 #### Reusing a selector across two hunts
@@ -537,26 +544,8 @@ bdog hunt selector add infra-q3 supply-p0
 # broaden scope; propagates to both hunts on next bugel
 bdog selector set supply-p0 \
     --selector "project in (SUPPLY, INFRA) AND priority = P0 AND status != Done"
-```
-
-#### Accepting a coverage candidate
-
-```sh
-# the bugel surfaced bdogitem-981 as a candidate (in a watched
-# source, not yet in the active set for this hunt)
-bdog item accept bdogitem-981 --hunt supply-q3
-
-# or, mark it as deliberately out of coverage for this hunt
-bdog item reject bdogitem-981 --hunt supply-q3
-```
-
-#### Carrying a drop-off forward
-
-```sh
-# the bugel surfaced bdogitem-714 as a drop-off (left the active
-# set since last refresh, e.g., closed at source but bird-dogger
-# knows the chase isn't done)
-bdog item carry-forward bdogitem-714 --hunt supply-q3
+bdog hunt bugel --dry-run
+bdog hunt bugel
 ```
 
 #### Deactivating a hunt at end of quarter

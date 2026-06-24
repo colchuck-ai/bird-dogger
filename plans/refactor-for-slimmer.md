@@ -111,8 +111,8 @@ Capture the full set of stale references before editing.
 3. Optionally add a one-liner example: item falls out of active set when selector no longer matches (no bird-dogger action required).
 
 **Acceptance criteria:**
-- [ ] No walkthrough references `item accept`, `reject`, or `carry-forward`.
-- [ ] At least one example demonstrates selector-driven scope change as the primary coverage adjustment path.
+- [x] No walkthrough references `item accept`, `reject`, or `carry-forward`.
+- [x] At least one example demonstrates selector-driven scope change as the primary coverage adjustment path.
 
 ---
 
@@ -290,7 +290,7 @@ Product O002 RSK002 states candidate sources are **not** surfaced automatically.
 |---|---|
 | T0 | complete |
 | T1 | complete |
-| T2 | pending |
+| T2 | complete |
 | T3 | pending |
 | T4 | pending |
 | T5 | pending |
