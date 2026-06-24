@@ -211,7 +211,7 @@ Produces tabular CLI output for list-level views and item-level detail views; pe
 
 #### Relationships
 
-- **Item Store (C007), Assessment Engine (C009), Override Store (C010), Synthesis Engine (C011), Note Store (C012), Touch Log (C013), Contact Registry (C014), Coverage Memory (C016)**: read for the data to render.
+- **Item Store (C007), Assessment Engine (C009), Override Store (C010), Synthesis Engine (C011), Note Store (C012), Touch Log (C013), Contact Registry (C014), Hunt Refresh State (C016)**: read for rendered data; item enumeration uses Item Store (C007) `active_set(H)` per [ADR012](adrs/ADR012-scope-via-selectors.md); Hunt Refresh State (C016) supplies refresh metadata only.
 - **CLI (C001)**: invoked by the CLI to produce output.
 
 ### Hunt Refresh State (C016)
@@ -246,11 +246,11 @@ Every requirement is exposed via **CLI (C001)** and rendered via **Renderer (C01
 - **J001-O001-R003** — Expected Trajectory: Item Store (C007), Refresh Engine (C008)
 - **J001-O001-R004** — Trajectory Comparison: Assessment Engine (C009)
 - **J001-O001-R005** — Silence As Signal: Assessment Engine (C009)
-- **J001-O001-R006** — Source Availability: Source Adapter (C005), Refresh Engine (C008), Coverage Memory (C016)
+- **J001-O001-R006** — Source Availability: Source Adapter (C005), Refresh Engine (C008), Hunt Refresh State (C016)
 - **J001-O001-R007** — Source Registration: Source Registry (C004), Source Adapter (C005), Credential Store (C003), Config Store (C002)
-- **J001-O002-R001** — Coverage Set Visibility: Coverage Memory (C016), Item Store (C007), Source Registry (C004), Selector Registry (C017), Hunt Registry (C006)
-- **J001-O002-R002** — Manual Item Capture: Item Store (C007), Coverage Memory (C016)
-- **J001-O002-R006** — Active Set Freshness: Refresh Engine (C008), Coverage Memory (C016)
+- **J001-O002-R001** — Coverage Set Visibility: Item Store (C007) materialized scope edges and `active_set(H)` enumeration, Hunt Registry (C006), Selector Registry (C017), Source Registry (C004), Hunt Refresh State (C016) refresh metadata
+- **J001-O002-R002** — Manual Item Capture: Item Store (C007) `item_hunts`, CLI (C001) `item hunt` verbs
+- **J001-O002-R006** — Active Set Freshness: Refresh Engine (C008), Hunt Refresh State (C016)
 - **J001-O002-R007** — Source Registration: Source Registry (C004), Source Adapter (C005), Credential Store (C003), Config Store (C002)
 - **J001-O003-R001** — Status Basis: Assessment Engine (C009), Item Store (C007)
 - **J001-O003-R002** — Status Freshness: Assessment Engine (C009), Item Store (C007)

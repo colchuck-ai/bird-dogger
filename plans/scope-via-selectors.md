@@ -270,8 +270,8 @@ Author the decision record. Suggested sections:
 3. Fix hits or add forward pointers to ADR012.
 
 **Acceptance criteria:**
-- [ ] Requirement map matches new responsibilities.
-- [ ] Grep inventory clean or explicitly documented exceptions.
+- [x] Requirement map matches new responsibilities.
+- [x] Grep inventory clean or explicitly documented exceptions.
 
 ---
 
@@ -295,11 +295,21 @@ Author the decision record. Suggested sections:
 
 ## Grep inventory
 
-<!-- T8: paste ripgrep results here -->
-
 | Pattern | File | Status |
 |---|---|---|
-| *(pending T8)* | | |
+| `(hunt, item)` | `docs/engineering/README.md` (C007, C008, C016 sections) | OK — negation / "not stored" per ADR012 |
+| `(hunt, item)` | `docs/engineering/adrs/ADR001-source-hunt-decoupling.md` | OK — consequence cites ADR012; no membership in C016 |
+| `(hunt, item)` | `docs/engineering/adrs/ADR004-selectors-as-first-class-declarations.md` | OK — "no membership writes" |
+| `(hunt, item)` | `docs/engineering/adrs/ADR006-native-id-scheme.md` | OK — scope edges in C007, not C016 |
+| `(hunt, item)` | `docs/engineering/adrs/ADR012-scope-via-selectors.md` | OK — decision record; historical context in Context/Options |
+| `active set membership per hunt` | *(none)* | OK — no hits |
+| `owning hunt` | `docs/engineering/components/C001-cli.md` | OK — rejects sole owning hunt |
+| `owning hunt` | `docs/engineering/components/C015-renderer.md` | OK — no sole "owning hunt" field |
+| `owning hunt` | `docs/engineering/adrs/ADR012-scope-via-selectors.md` | OK — historical / rejected model in Context/Options |
+| `Coverage Memory.*active set` | `docs/engineering/adrs/ADR012-scope-via-selectors.md` | OK — Context describes superseded model only |
+| `two membership rows in Coverage Memory` | `docs/engineering/adrs/ADR012-scope-via-selectors.md` | OK — ADR001 superseded consequence documented |
+| Requirement map stale C016 scope role | `docs/engineering/README.md` | Fixed — R001, R002, R006, J001-O001-R006 map updated in T8 |
+| Renderer C016 generic "read for data" | `docs/engineering/README.md` C015 relationships | Fixed — enumeration via C007; C016 metadata only |
 
 ---
 
@@ -315,7 +325,7 @@ Author the decision record. Suggested sections:
 | T5 | complete |
 | T6 | complete |
 | T7 | complete |
-| T8 | pending |
+| T8 | complete |
 | T9 | pending |
 
 ---
