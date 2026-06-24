@@ -208,9 +208,9 @@ Author the decision record. Suggested sections:
 6. Update **Removal semantics** / hunt `remove` pre-step: clear `(item, hunt)` rows for manual items (not “reassign `--hunt`” singular).
 
 **Acceptance criteria:**
-- [ ] Multi-hunt manual membership is documented and operable via CLI.
-- [ ] No “owning hunt” singular model remains as the primary path.
-- [ ] Examples consistent with ADR012.
+- [x] Multi-hunt manual membership is documented and operable via CLI.
+- [x] No “owning hunt” singular model remains as the primary path.
+- [x] Examples consistent with ADR012.
 
 ---
 
@@ -312,7 +312,7 @@ Author the decision record. Suggested sections:
 | T2 | pending |
 | T3 | pending |
 | T4 | pending |
-| T5 | pending |
+| T5 | complete |
 | T6 | pending |
 | T7 | complete |
 | T8 | pending |

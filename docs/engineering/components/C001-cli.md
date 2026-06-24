@@ -32,7 +32,7 @@ bdog <noun> <sub-verb> [<args>] [<flags>]
 Standard sub-verbs: `add | remove | info | list | set`. Every top-level noun exposes all five unless carved out.
 
 **Carve-outs.**
-- Sub-resources with no state of their own (`hunt selector`, `item depends-on`): `add | remove | list` only.
+- Sub-resources with no state of their own (`hunt selector`, `item hunt`, `item depends-on`): `add | remove | list` only.
 - Action verbs that are not field updates: documented per noun below.
 
 **Global flags** (every command):
@@ -184,7 +184,7 @@ bdog hunt bugel [<hunt>...]
     --verbose
 ```
 
-No-arg `bugel` runs active hunts only. Explicit hunt names override the active filter. `remove` fails when manual items are assigned to the hunt.
+No-arg `bugel` runs active hunts only. Explicit hunt names override the active filter. `remove` fails when manual items still have `item_hunts` links to the hunt.
 
 **hunt selector** (unordered set membership):
 
@@ -203,7 +203,7 @@ Tracked open work unit — source-derived or manually captured.
 ```
 bdog item add
     --title       <text>      required
-    --hunt        <hunt>      required
+    --hunt        <hunt>...   optional, repeatable; seeds item_hunts rows at creation
     --due         <date>
     --first-note  <text>
 
@@ -217,7 +217,6 @@ bdog item list
 
 bdog item set <item>
     --title | --trajectory due-date|pace|none | --due | --pace
-    --hunt <hunt>               manual only
     --chain <chain>|none | --owner <contact>|none
     --clear-pace
 
@@ -228,7 +227,19 @@ bdog item confirm-owner <item>
 
 Trajectory cross-validation: `due-date` requires `--due`; `pace` requires `--pace`; `none` clears both. Conflicting trajectory and field combinations error with resolution hint.
 
+**Manual item hunt membership.** Manual items may belong to zero or more hunts. Each hunt link is an `item_hunts` row in Item Store (C007), written by CLI (C001). Omitting `--hunt` on `item add` creates a manual item with no hunt membership; assign hunts later via `item hunt add`. There is no sole owning hunt — multi-hunt assignment is the primary path. Source-derived items never receive `item_hunts` rows; their scope is materialized via `item_selectors` on refresh only.
+
 **Source-backed item scope.** Source-backed items enter a hunt's active set when they match the hunt's selectors on refresh; they leave on the next refresh when they no longer match. Scope is adjusted by editing selectors (`hunt selector add/remove`, `selector set`). There is no per-item accept/reject for source-backed items; `item add` and `item remove` apply to manually captured items only.
+
+**item hunt** (manual multi-hunt assignment; mirrors `hunt selector` pattern):
+
+```
+bdog item hunt add    <item> <hunt>...
+bdog item hunt remove <item> <hunt>...
+bdog item hunt list   <item>
+```
+
+`add` with varargs; errors if any hunt link already exists; partial state is not written. `remove` errors if the item is not linked to the given hunt. `list` shows all hunts the manual item is assigned to (not selector-matched scope — see C015 for display of the full active-set union). Rejected on source-derived items.
 
 **item depends-on:**
 
@@ -316,7 +327,7 @@ List-level and detail output shapes are specified in [Renderer (C015)](C015-rend
 | `selector` | Remove from every hunt (`hunt selector remove`) |
 | `contact` | Remove from chains; clear item owners |
 | `chain` | Clear from every item (`item set --chain none`) |
-| `hunt` | Reassign or remove manual items |
+| `hunt` | Clear manual `item_hunts` links (`item hunt remove`) or remove manual items (`item remove`) |
 | `item` (manual) | None |
 
 **Idempotence.**
@@ -332,6 +343,8 @@ List-level and detail output shapes are specified in [Renderer (C015)](C015-rend
 | `hunt bugel --no-refresh` | Idempotent on identical State-band input |
 | `touch record-response` | Idempotent on identical input; overwrites on different input |
 | `hunt activate/deactivate` | Idempotent |
+| `item hunt add` | Errors if link already exists |
+| `item hunt remove` | Errors if link not found |
 | `item confirm-owner` | Not idempotent; advances timestamp each invocation |
 
 **Bugel as sole refresh path.** `hunt bugel` sequences refresh → re-assess → synthesize → render. No standalone refresh command. `--no-refresh` skips the pull; `--dry-run` previews without writing.
@@ -354,7 +367,7 @@ List-level and detail output shapes are specified in [Renderer (C015)](C015-rend
 - **C002**: reads and writes declared sources, selectors, hunts, contacts, chains; canonical id assigner for config entities.
 - **C003**: writes tokens on `source add` and `source rotate-token` (never to C002).
 - **C004, C006, C014, C017**: dispatches registration and edit verbs.
-- **C007, C016**: dispatches manual item capture, trajectories, and dependencies.
+- **C007, C016**: dispatches manual item capture, `item_hunts` membership, trajectories, and dependencies.
 - **C008, C009, C010, C011, C012, C013**: dispatches chase actions including `hunt bugel`.
 - **C015**: hands structured results for rendering.
 
@@ -372,7 +385,7 @@ Supersedes the placeholder verb list previously in the engineering root README.
 
 ### Design decisions
 
-**Noun-first sub-verb pattern.** Every managed entity follows `bdog <noun> <sub-verb>`. Top-level nouns expose the full `add|remove|info|list|set` set; stateless sub-resources (`hunt selector`, `item depends-on`) expose `add|remove|list` only. Learning one noun transfers to all others; tab completion surfaces a consistent shape across the entire binary.
+**Noun-first sub-verb pattern.** Every managed entity follows `bdog <noun> <sub-verb>`. Top-level nouns expose the full `add|remove|info|list|set` set; stateless sub-resources (`hunt selector`, `item hunt`, `item depends-on`) expose `add|remove|list` only. Learning one noun transfers to all others; tab completion surfaces a consistent shape across the entire binary.
 
 **Storage keys on stable ids; the CLI speaks names.** Every declared entity carries a `bdog<kind>-<n>` id alongside its bird-dogger-chosen name. Cross-entity references in the TOML config and SQLite stores key on the id, not the name. Renames are therefore local — there is no propagation step and no risk of a half-updated reference. See ADR006 for the native-id scheme and source-id alias design.
 
@@ -380,9 +393,9 @@ Supersedes the placeholder verb list previously in the engineering root README.
 
 **Contacts are top-level; chains reference contacts.** A contact is the person; a chain is a named ordered list of contacts; an item references one contact for ownership and optionally one chain for escalation. Lifting contacts out of chains lets the same person appear in multiple chains and as multiple items' owner without re-declaration; channel handles, freshness, and disagreement state live with the contact.
 
-**`hunt selector` exposes only `add|remove|list`.** The sub-resource records only membership — there is nothing to `set` or inspect via `info` that does not already live on the `selector` noun. The asymmetry with `chain member` is intentional: `chain member` carries its own state (position) and its order is bird-dogger-visible; `hunt selector` is an unordered set, and the refresh engine walks all referenced selectors per bugel without bird-dogger-controlled ordering.
+**`hunt selector` and `item hunt` expose only `add|remove|list`.** Each sub-resource records only membership — there is nothing to `set` or inspect via `info` that does not already live on the parent noun. The asymmetry with `chain member` is intentional: `chain member` carries its own state (position) and its order is bird-dogger-visible; `hunt selector` and `item hunt` are unordered sets. `hunt selector` links hunts to selectors; `item hunt` links manual items to hunts. Per [ADR012](../adrs/ADR012-scope-via-selectors.md), source-backed scope is materialized in `item_selectors` on refresh; manual multi-hunt scope is materialized in `item_hunts` via these verbs.
 
-**Manual items carry no source reference.** `item add` accepts no URL or source identifier. A manual item is a purely local record. Tracking a specific remote item that falls outside existing selectors is done by creating a targeted selector — this keeps item identity clean and avoids a hybrid manual-plus-remote category.
+**Manual items carry no source reference.** `item add` accepts no URL or source identifier. A manual item is a purely local record. Tracking a specific remote item that falls outside existing selectors is done by creating a targeted selector — this keeps item identity clean and avoids a hybrid manual-plus-remote category. Hunt membership for manual items uses repeatable optional `--hunt` on `add` or `item hunt add` afterward; `item set --hunt` is deprecated in favor of `item hunt add` / `item hunt remove`.
 
 **No-cascade removal.** Removing a declarative entity (`source`, `selector`, `contact`, `chain`, `hunt`) or manual item is rejected when any consumer still references it. The error names the blocking references and the verbs that would clear them. Cascade would let one verb silently destroy chains of declarations and per-item history; failing fast keeps the bird-dogger in control. See ADR007.
 
@@ -507,6 +520,43 @@ bdog item add \
 
 # the item's id (bdogitem-N) is printed; use it on subsequent commands
 bdog item set bdogitem-487 --trajectory due-date --due 2026-07-15 --owner dave
+```
+
+#### Manual item in two hunts
+
+```sh
+# create with one hunt; add a second later
+bdog item add \
+    --title "cross-team auth blocker" \
+    --hunt supply-q3 \
+    --first-note "blocks both supply and infra q3 deliverables"
+
+bdog item hunt add bdogitem-488 infra-q3
+
+bdog item hunt list bdogitem-488
+# supply-q3
+# infra-q3
+
+# scoped lists include the item in both hunts' active sets
+bdog item list --hunt supply-q3
+bdog item list --hunt infra-q3
+
+# remove from one hunt without affecting the other
+bdog item hunt remove bdogitem-488 supply-q3
+```
+
+#### Selector edit affects source-backed peers only
+
+```sh
+# manual item bdogitem-488 remains in infra-q3 via item_hunts regardless of selector changes
+bdog selector set supply-p0 \
+    --selector "project = SUPPLY AND priority = P0 AND status != Done AND labels != deprecated"
+
+bdog hunt bugel supply-q3 --dry-run
+# preview: source-backed items that no longer match supply-p0 leave supply-q3 active set;
+# manual items (item_hunts) are unchanged
+
+bdog hunt bugel supply-q3
 ```
 
 #### Adding a selector to a live hunt
